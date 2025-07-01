@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { storageManager } from '../services/storageManager';
 import { syncEngine } from '../services/syncEngine';
+import { getRegionCode, setRegionOverride } from '../services/regionService';
 import type { UserSession, AppMode, SyncStatus, Company } from '../types';
 
 // ==========================================
@@ -15,6 +16,7 @@ interface AppState {
   // Estado de la aplicación
   appMode: AppMode;
   currentCompany: Company | null;
+  regionCode: string;
   
   // Estados de sistema
   syncStatus: SyncStatus;
@@ -43,6 +45,7 @@ type AppAction =
   | { type: 'SET_SYNC_STATUS'; payload: SyncStatus }
   | { type: 'SET_ONLINE_STATUS'; payload: boolean }
   | { type: 'SET_CURRENT_SCREEN'; payload: string }
+  | { type: 'SET_REGION_CODE'; payload: string }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'ADD_NOTIFICATION'; payload: AppState['notifications'][0] }
@@ -79,6 +82,9 @@ function appReducer(state: AppState, action: AppAction): AppState {
 
     case 'SET_CURRENT_SCREEN':
       return { ...state, currentScreen: action.payload };
+
+    case 'SET_REGION_CODE':
+      return { ...state, regionCode: action.payload };
 
     case 'SET_LOADING':
       return { ...state, loading: action.payload };
@@ -145,6 +151,7 @@ const initialState: AppState = {
     }
   },
   currentCompany: null,
+  regionCode: 'ES',
   syncStatus: {
     isOnline: navigator.onLine,
     pendingCount: 0,
@@ -185,6 +192,7 @@ interface AppContextType {
   
   // Métodos de configuración
   switchAppMode: (mode: AppMode['mode']) => void;
+  setRegionCode: (code: string) => void;
   
   // Métodos de sincronización
   forcSync: () => Promise<void>;
@@ -216,7 +224,11 @@ export function AppProvider({ children }: AppProviderProps) {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
 
-      console.log('[AppProvider] Initializing app...');
+    console.log('[AppProvider] Initializing app...');
+
+    // Detectar región
+    const region = await getRegionCode();
+    dispatch({ type: 'SET_REGION_CODE', payload: region });
 
       // Cargar configuración de la aplicación
       const savedAppMode = storageManager.get<AppMode>('wmapp_mode');
@@ -458,6 +470,11 @@ export function AppProvider({ children }: AppProviderProps) {
     });
   };
 
+  const setRegionCode = (code: string) => {
+    setRegionOverride(code);
+    dispatch({ type: 'SET_REGION_CODE', payload: code });
+  };
+
   // ==========================================
   // MÉTODOS DE SINCRONIZACIÓN
   // ==========================================
@@ -501,6 +518,7 @@ export function AppProvider({ children }: AppProviderProps) {
     setLoading,
     setError,
     switchAppMode,
+    setRegionCode,
     forcSync
   };
 

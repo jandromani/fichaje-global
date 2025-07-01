@@ -5,8 +5,9 @@ import {
   Users, 
   MapPin, 
   Calendar, 
-  BarChart3, 
-  Settings, 
+  BarChart3,
+  Settings,
+  Shield,
   LogOut,
   Bell,
   Menu,
@@ -15,13 +16,14 @@ import {
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { useApp } from '../../contexts/AppContext';
+import { regionConfig } from '../../regionConfig';
 
 interface MainLayoutProps {
   children: React.ReactNode;
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
-  const { state, logout, navigateTo, clearAllNotifications } = useApp();
+  const { state, logout, navigateTo, clearAllNotifications, setRegionCode } = useApp();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   const navigation = [
@@ -31,6 +33,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     { name: 'Estaciones', icon: MapPin, screen: 'stations', roles: ['admin', 'manager'] },
     { name: 'Ausencias', icon: Calendar, screen: 'leaves', roles: ['admin', 'manager', 'employee'] },
     { name: 'Reportes', icon: BarChart3, screen: 'reports', roles: ['admin', 'manager'] },
+    { name: 'Política', icon: Shield, screen: 'policy', roles: ['admin', 'manager', 'employee'] },
     { name: 'Configuración', icon: Settings, screen: 'settings', roles: ['admin', 'manager', 'employee'] },
   ];
 
@@ -161,6 +164,24 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <span className="text-sm text-gray-600 hidden sm:inline">
                   {state.isOnline ? 'En línea' : 'Sin conexión'}
                 </span>
+              </div>
+
+              {/* Region selector */}
+              <div className="flex items-center space-x-2">
+                <img
+                  src={`https://flagcdn.com/w20/${state.regionCode.toLowerCase()}.png`}
+                  alt={state.regionCode}
+                  className="w-5 h-3"
+                />
+                <select
+                  value={state.regionCode}
+                  onChange={(e) => setRegionCode(e.target.value)}
+                  className="text-sm border rounded px-1 py-0.5"
+                >
+                  {Object.keys(regionConfig).map(code => (
+                    <option key={code} value={code}>{code}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Sync status */}

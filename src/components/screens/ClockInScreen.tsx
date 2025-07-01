@@ -19,6 +19,7 @@ import { useApp } from '../../contexts/AppContext';
 import { useClockIns, useStations } from '../../hooks/useData';
 import { qrEngine } from '../../services/qrEngine';
 import { storageManager } from '../../services/storageManager';
+import { validateClockIn } from '../../services/policyService';
 
 export function ClockInScreen() {
   const { state, showNotification } = useApp();
@@ -212,6 +213,11 @@ export function ClockInScreen() {
       notes: `Fichaje manual desde ${station.name}`
     };
 
+    const warnings = validateClockIn(clockIns || [], { ...clockInData, id: '' } as any, state.regionCode);
+    warnings.forEach(w =>
+      showNotification({ type: 'warning', title: 'Advertencia', message: w })
+    );
+
     const result = await createClockIn(clockInData);
     
     if (result) {
@@ -256,6 +262,11 @@ export function ClockInScreen() {
       isManualEntry: false,
       notes: `Fichaje QR desde ${scanResult.station.name}`
     };
+
+    const warnings = validateClockIn(clockIns || [], { ...clockInData, id: '' } as any, state.regionCode);
+    warnings.forEach(w =>
+      showNotification({ type: 'warning', title: 'Advertencia', message: w })
+    );
 
     const result = await createClockIn(clockInData);
     

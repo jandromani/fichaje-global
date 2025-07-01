@@ -10,6 +10,7 @@ import { LeavesScreen } from './components/screens/LeavesScreen';
 import { ReportsScreen } from './components/screens/ReportsScreen';
 import { NotificationsScreen } from './components/screens/NotificationsScreen';
 import { SettingsScreen } from './components/screens/SettingsScreen';
+import { PolicyScreen } from './components/screens/PolicyScreen';
 
 // ==========================================
 // COMPONENTE PRINCIPAL DE LA APLICACIÓN
@@ -51,6 +52,8 @@ function AppContent() {
         return <LeavesScreen />;
       case 'reports':
         return <ReportsScreen />;
+      case 'policy':
+        return <PolicyScreen />;
       case 'settings':
         return <SettingsScreen />;
       case 'notifications':
@@ -123,7 +126,7 @@ function getModeColors(mode: string): string {
 function getModeMessage(mode: string): string {
   switch (mode) {
     case 'demo':
-      return '🎯 MODO DEMO - Datos de prueba activos • Los cambios no se guardan permanentemente';
+      return 'Modo DEMO – algunas configuraciones están simuladas';
     case 'debug':
       return '🐛 MODO DEBUG - Herramientas de desarrollo activas • Solo para desarrollo';
     case 'production':
