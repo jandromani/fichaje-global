@@ -147,6 +147,8 @@ export interface QRMetadata {
   companyId: string;
   timestamp: string;
   version: string;
+  language: string;
+  mode: 'demo' | 'production';
   signature?: string;
   expiresAt?: string;
   isTemporary: boolean;
@@ -254,6 +256,42 @@ export interface ReportConfig {
 }
 
 // ==========================================
+// NUEVOS MODELOS NORMALIZADOS
+// ==========================================
+
+export interface Worker extends BaseEntity {
+  firstName: string;
+  lastName: string;
+  positionId?: string;
+  active: boolean;
+}
+
+export interface ClockRecord extends BaseEntity {
+  workerId: string;
+  stationId: string;
+  type: 'in' | 'out';
+  timestamp: string;
+}
+
+export interface Position extends BaseEntity {
+  name: string;
+  description?: string;
+}
+
+export interface AbsenceRequest extends BaseEntity {
+  workerId: string;
+  startDate: string;
+  endDate: string;
+  type: 'vacation' | 'sick' | 'other';
+  status: 'pending' | 'approved' | 'rejected';
+}
+
+export interface QRTemplate extends BaseEntity {
+  name: string;
+  content: string;
+}
+
+// ==========================================
 // CONFIGURACIÓN Y CONSTANTES
 // ==========================================
 
@@ -274,6 +312,11 @@ export const STORAGE_KEYS = {
   STATIONS: 'wmapp_stations',
   CLOCKINS: 'wmapp_clockins',
   LEAVE_REQUESTS: 'wmapp_leave_requests',
+  WORKERS: 'wmapp_workers',
+  CLOCK_RECORDS: 'wmapp_clock_records',
+  POSITIONS: 'wmapp_positions',
+  ABSENCE_REQUESTS: 'wmapp_absence_requests',
+  QR_TEMPLATES: 'wmapp_qr_templates',
   NOTIFICATIONS: 'wmapp_notifications',
   SESSION: 'wmapp_session',
   APP_MODE: 'wmapp_mode',
