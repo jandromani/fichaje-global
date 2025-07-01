@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import bcrypt from 'bcryptjs';
+import { formatDate } from '../../services/dateUtils';
 import { 
   Users, 
   Plus, 
@@ -88,7 +90,7 @@ export function UsersScreen() {
       locale: currentCompany?.locale || 'es-ES',
       currency: currentCompany?.currency || 'EUR',
       startDate: formData.startDate || new Date().toISOString().split('T')[0],
-      passwordHash: '5d41402abc4b2a76b9719d911017c592', // Default: 'hello'
+      passwordHash: bcrypt.hashSync('hello', 10),
       permissions: getDefaultPermissions(formData.role || 'employee')
     };
 
@@ -739,7 +741,7 @@ export function UsersScreen() {
                   <div className="flex items-center space-x-2">
                     <Calendar className="w-4 h-4 text-gray-400" />
                     <span className="text-sm">
-                      Inicio: {new Date(selectedUser.startDate).toLocaleDateString('es-ES')}
+                      Inicio: {formatDate(new Date(selectedUser.startDate), state.session?.user.locale || 'es-ES')}
                     </span>
                   </div>
                   

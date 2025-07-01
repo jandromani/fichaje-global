@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatDate } from '../../services/dateUtils';
 import { 
   Clock, 
   Users, 
@@ -18,7 +19,7 @@ import { useClockIns, useUsers, useLeaveRequests, useStations } from '../../hook
 
 export function DashboardScreen() {
   const { state, navigateTo } = useApp();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data: clockIns, loading: clockInsLoading } = useClockIns();
   const { data: users, loading: usersLoading } = useUsers();
   const { data: leaveRequests, loading: leavesLoading } = useLeaveRequests();
@@ -72,12 +73,7 @@ export function DashboardScreen() {
         </div>
         <div className="text-right">
           <p className="text-sm text-gray-500">
-            {new Date().toLocaleDateString('es-ES', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
+            {formatDate(new Date(), i18n.language)}
           </p>
         </div>
       </div>
@@ -228,7 +224,7 @@ export function DashboardScreen() {
                         {userRole === 'employee' ? leave.type : `${user?.firstName} ${user?.lastName}`}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {new Date(leave.startDate).toLocaleDateString('es-ES')} - {new Date(leave.endDate).toLocaleDateString('es-ES')}
+                        {formatDate(new Date(leave.startDate), i18n.language)} - {formatDate(new Date(leave.endDate), i18n.language)}
                       </p>
                     </div>
                     <Badge 

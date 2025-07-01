@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import bcrypt from 'bcryptjs';
 import { storageManager } from '../services/storageManager';
 import { syncEngine } from '../services/syncEngine';
 import { startLegalPurge } from '../services/legalEngine';
@@ -25,6 +26,9 @@ interface AppState {
   currentScreen: string;
   loading: boolean;
   error: string | null;
+
+  // Tema de la interfaz
+  theme: 'light' | 'dark';
   
   // Notificaciones
   notifications: Array<{
@@ -50,7 +54,8 @@ type AppAction =
   | { type: 'REMOVE_NOTIFICATION'; payload: string }
   | { type: 'CLEAR_NOTIFICATIONS' }
   | { type: 'LOGOUT' }
-  | { type: 'INITIALIZE_APP'; payload: Partial<AppState> };
+  | { type: 'INITIALIZE_APP'; payload: Partial<AppState> }
+  | { type: 'SET_THEME'; payload: 'light' | 'dark' };
 
 // ==========================================
 // REDUCER
@@ -117,6 +122,9 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'INITIALIZE_APP':
       return { ...state, ...action.payload };
 
+    case 'SET_THEME':
+      return { ...state, theme: action.payload };
+
     default:
       return state;
   }
@@ -157,7 +165,8 @@ const initialState: AppState = {
   currentScreen: 'login',
   loading: false,
   error: null,
-  notifications: []
+  notifications: [],
+  theme: 'light'
 };
 
 // ==========================================
@@ -186,6 +195,7 @@ interface AppContextType {
   
   // Métodos de configuración
   switchAppMode: (mode: AppMode['mode']) => void;
+  setTheme: (theme: 'light' | 'dark') => void;
   
   // Métodos de sincronización
   forcSync: () => Promise<void>;
@@ -213,6 +223,16 @@ export function AppProvider({ children }: AppProviderProps) {
     initializeApp();
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const expires = state.session?.expiresAt;
+      if (expires && new Date() > new Date(expires)) {
+        logout();
+      }
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [state.session]);
+
   const initializeApp = async () => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
@@ -224,6 +244,9 @@ export function AppProvider({ children }: AppProviderProps) {
       if (savedAppMode) {
         dispatch({ type: 'SET_APP_MODE', payload: savedAppMode });
       }
+
+      const savedTheme = storageManager.get<'light' | 'dark'>('wmapp_theme', 'light');
+      setTheme(savedTheme);
 
       // Cargar sesión guardada
       const savedSession = storageManager.get<UserSession>('wmapp_session');
@@ -288,16 +311,9 @@ export function AppProvider({ children }: AppProviderProps) {
       const users = storageManager.get('wmapp_users', []);
       console.log('[AppProvider] Found users:', users.length);
       
-      // Para debug, mostrar los hashes
-      const expectedHash = hashPassword(password);
-      console.log('[AppProvider] Expected hash for password "' + password + '":', expectedHash);
-      
       const user = users.find((u: Record<string, unknown>) => {
         const emailMatch = u.email.toLowerCase() === email.toLowerCase();
-        const passwordMatch = u.passwordHash === expectedHash;
-        
-        console.log('[AppProvider] Checking user:', u.email, 'Hash:', u.passwordHash, 'Expected:', expectedHash, 'Match:', passwordMatch);
-        
+        const passwordMatch = verifyPassword(password, u.passwordHash);
         return emailMatch && passwordMatch;
       });
 
@@ -461,6 +477,17 @@ export function AppProvider({ children }: AppProviderProps) {
     });
   };
 
+  const setTheme = (theme: 'light' | 'dark') => {
+    storageManager.set('wmapp_theme', theme);
+    dispatch({ type: 'SET_THEME', payload: theme });
+    const html = document.documentElement;
+    if (theme === 'dark') {
+      html.classList.add('dark');
+    } else {
+      html.classList.remove('dark');
+    }
+  };
+
   // ==========================================
   // MÉTODOS DE SINCRONIZACIÓN
   // ==========================================
@@ -505,6 +532,7 @@ export function AppProvider({ children }: AppProviderProps) {
     setLoading,
     setError,
     switchAppMode,
+    setTheme,
     forcSync
   };
 
@@ -539,19 +567,11 @@ function isSessionValid(session: UserSession): boolean {
 
 // Función de hash simplificada y consistente
 function hashPassword(password: string): string {
-  // Para el demo, usar un hash fijo conocido para 'hello'
-  if (password === 'hello') {
-    return '5d41402abc4b2a76b9719d911017c592';
-  }
-  
-  // Para otras contraseñas, usar hash simple
-  let hash = 0;
-  for (let i = 0; i < password.length; i++) {
-    const char = password.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return Math.abs(hash).toString(16);
+  return bcrypt.hashSync(password, 10);
+}
+
+function verifyPassword(input: string, stored: string): boolean {
+  return bcrypt.compareSync(input, stored);
 }
 
 function generateDeviceFingerprint(): string {

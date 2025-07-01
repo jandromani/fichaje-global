@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatDate } from '../../services/dateUtils';
 import { 
   Bell, 
   Check, 
@@ -418,12 +419,12 @@ export function NotificationsScreen() {
                       </p>
                       
                       <div className="flex items-center space-x-4 text-xs text-gray-500">
-                        <span>{new Date(notification.createdAt).toLocaleString('es-ES')}</span>
+                        <span>{formatDate(new Date(notification.createdAt), state.session?.user.locale || 'es-ES')}</span>
                         
                         {notification.expiresAt && (
                           <span className="flex items-center space-x-1">
                             <Clock className="w-3 h-3" />
-                            <span>Expira: {new Date(notification.expiresAt).toLocaleDateString('es-ES')}</span>
+                            <span>Expira: {formatDate(new Date(notification.expiresAt), state.session?.user.locale || 'es-ES')}</span>
                           </span>
                         )}
                       </div>

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { formatDate } from '../../services/dateUtils';
 import { 
   BarChart3, 
   Download, 
@@ -187,7 +188,7 @@ export function ReportsScreen() {
         date: dateStr,
         clockIns: dayClockIns.length,
         users: dayUsers,
-        dayName: currentDate.toLocaleDateString('es-ES', { weekday: 'short' })
+        dayName: formatDate(currentDate, state.session?.user.locale || 'es-ES')
       });
       
       currentDate.setDate(currentDate.getDate() + 1);

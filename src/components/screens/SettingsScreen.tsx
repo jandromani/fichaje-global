@@ -26,7 +26,7 @@ import { storageManager } from '../../services/storageManager';
 import { environmentInitializer } from '../../services/initializeDefaultEnvironment';
 
 export function SettingsScreen() {
-  const { state, showNotification, switchAppMode } = useApp();
+  const { state, showNotification, switchAppMode, setTheme } = useApp();
   const [activeTab, setActiveTab] = useState('profile');
   const [showResetModal, setShowResetModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
@@ -346,6 +346,9 @@ export function SettingsScreen() {
     <div className="space-y-6">
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Configuración de la Aplicación</h3>
+        <Button onClick={() => setTheme(state.theme === 'light' ? 'dark' : 'light')} icon={Palette} variant="secondary">
+          {state.theme === 'light' ? 'Activar modo oscuro' : 'Desactivar modo oscuro'}
+        </Button>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>

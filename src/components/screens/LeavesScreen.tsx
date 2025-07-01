@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatDate } from '../../services/dateUtils';
 import { 
   Calendar, 
   Plus, 
@@ -437,7 +438,7 @@ export function LeavesScreen() {
                       <div>
                         <span className="font-medium">Fechas:</span>
                         <p>
-                          {new Date(request.startDate).toLocaleDateString('es-ES')} - {new Date(request.endDate).toLocaleDateString('es-ES')}
+                          {formatDate(new Date(request.startDate), state.session?.user.locale || 'es-ES')} - {formatDate(new Date(request.endDate), state.session?.user.locale || 'es-ES')}
                         </p>
                       </div>
                       
@@ -448,7 +449,7 @@ export function LeavesScreen() {
                       
                       <div>
                         <span className="font-medium">Solicitado:</span>
-                        <p>{new Date(request.createdAt).toLocaleDateString('es-ES')}</p>
+                        <p>{formatDate(new Date(request.createdAt), state.session?.user.locale || 'es-ES')}</p>
                       </div>
                     </div>
                     
@@ -458,7 +459,7 @@ export function LeavesScreen() {
                           {request.status === 'approved' ? 'Aprobado' : 'Rechazado'} por:
                         </span>
                         <span className="ml-1">
-                          {approver.firstName} {approver.lastName} el {new Date(request.approvedAt).toLocaleDateString('es-ES')}
+                          {approver.firstName} {approver.lastName} el {formatDate(new Date(request.approvedAt), state.session?.user.locale || 'es-ES')}
                         </span>
                       </div>
                     )}
@@ -721,12 +722,12 @@ export function LeavesScreen() {
                 <div className="space-y-3 text-sm">
                   <div>
                     <span className="font-medium text-gray-700">Fecha de inicio:</span>
-                    <p>{new Date(selectedRequest.startDate).toLocaleDateString('es-ES')}</p>
+                    <p>{formatDate(new Date(selectedRequest.startDate), state.session?.user.locale || 'es-ES')}</p>
                   </div>
                   
                   <div>
                     <span className="font-medium text-gray-700">Fecha de fin:</span>
-                    <p>{new Date(selectedRequest.endDate).toLocaleDateString('es-ES')}</p>
+                    <p>{formatDate(new Date(selectedRequest.endDate), state.session?.user.locale || 'es-ES')}</p>
                   </div>
                   
                   <div>
@@ -749,7 +750,7 @@ export function LeavesScreen() {
                 <div className="space-y-3 text-sm">
                   <div>
                     <span className="font-medium text-gray-700">Solicitado el:</span>
-                    <p>{new Date(selectedRequest.createdAt).toLocaleDateString('es-ES')}</p>
+                    <p>{formatDate(new Date(selectedRequest.createdAt), state.session?.user.locale || 'es-ES')}</p>
                   </div>
                   
                   {selectedRequest.approvedAt && (
@@ -757,7 +758,7 @@ export function LeavesScreen() {
                       <span className="font-medium text-gray-700">
                         {selectedRequest.status === 'approved' ? 'Aprobado' : 'Rechazado'} el:
                       </span>
-                      <p>{new Date(selectedRequest.approvedAt).toLocaleDateString('es-ES')}</p>
+                      <p>{formatDate(new Date(selectedRequest.approvedAt), state.session?.user.locale || 'es-ES')}</p>
                     </div>
                   )}
                   

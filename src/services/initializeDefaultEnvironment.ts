@@ -1,5 +1,6 @@
 import { storageManager } from './storageManager';
 import { qrEngine } from './qrEngine';
+import bcrypt from 'bcryptjs';
 import type { User, Company, Station, ClockIn, LeaveRequest, Notification, AppMode } from '../types';
 
 // ==========================================
@@ -162,7 +163,7 @@ class EnvironmentInitializer {
         department: 'Administración',
         position: 'Directora General',
         salary: 45000,
-        passwordHash: '5d41402abc4b2a76b9719d911017c592', // Hash fijo para 'hello'
+        passwordHash: bcrypt.hashSync('hello', 10), // Hash fijo para 'hello'
         permissions: [
           { resource: '*', actions: ['create', 'read', 'update', 'delete', 'approve'] }
         ]
@@ -180,7 +181,7 @@ class EnvironmentInitializer {
         department: 'Operaciones',
         position: 'Jefe de Operaciones',
         salary: 35000,
-        passwordHash: '5d41402abc4b2a76b9719d911017c592',
+        passwordHash: bcrypt.hashSync('hello', 10),
         permissions: [
           { resource: 'users', actions: ['read', 'update'] },
           { resource: 'clockins', actions: ['read', 'update', 'approve'] },
@@ -202,7 +203,7 @@ class EnvironmentInitializer {
         department: 'Ventas',
         position: 'Comercial',
         salary: 28000,
-        passwordHash: '5d41402abc4b2a76b9719d911017c592',
+        passwordHash: bcrypt.hashSync('hello', 10),
         permissions: [
           { resource: 'clockins', actions: ['create', 'read'] },
           { resource: 'leaves', actions: ['create', 'read', 'update'] },
@@ -222,7 +223,7 @@ class EnvironmentInitializer {
         department: 'Almacén',
         position: 'Operario',
         salary: 24000,
-        passwordHash: '5d41402abc4b2a76b9719d911017c592',
+        passwordHash: bcrypt.hashSync('hello', 10),
         permissions: [
           { resource: 'clockins', actions: ['create', 'read'] },
           { resource: 'leaves', actions: ['create', 'read', 'update'] },
