@@ -1,0 +1,26 @@
+{
+  "app": { "title": "Gerenciamento de Pessoal" },
+  "button": {
+    "clockIn": "Registrar Entrada",
+    "clockOut": "Registrar Saída",
+    "demoLogin": "Acessar Demo",
+    "logout": "Sair"
+  },
+  "nav": {
+    "dashboard": "Painel",
+    "clockins": "Registros",
+    "users": "Funcionários",
+    "stations": "Estações",
+    "leaves": "Férias",
+    "reports": "Relatórios",
+    "settings": "Configurações"
+  },
+  "status": {
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "login": {
+    "title": "Acesso ao Sistema",
+    "subtitle": "Faça login para acessar o painel de controle"
+  }
+}

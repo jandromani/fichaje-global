@@ -19,6 +19,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
+import { formatLocalizedDate } from '../../utils/date';
+import i18n from '../../i18n';
 import { Badge } from '../ui/Badge';
 import { Modal } from '../ui/Modal';
 import { useApp } from '../../contexts/AppContext';
@@ -424,7 +426,7 @@ export function NotificationsScreen() {
                         {notification.expiresAt && (
                           <span className="flex items-center space-x-1">
                             <Clock className="w-3 h-3" />
-                            <span>Expira: {formatDate(new Date(notification.expiresAt), state.session?.user.locale || 'es-ES')}</span>
+                            <span>Expira: {formatLocalizedDate(new Date(notification.expiresAt), i18n.language)}</span>
                           </span>
                         )}
                       </div>

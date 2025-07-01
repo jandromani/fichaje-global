@@ -1,0 +1,26 @@
+{
+  "app": { "title": "Workforce Management" },
+  "button": {
+    "clockIn": "Fichar Entrada",
+    "clockOut": "Fichar Salida",
+    "demoLogin": "Acceder al Demo",
+    "logout": "Cerrar Sesión"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "clockins": "Fichajes",
+    "users": "Empleados",
+    "stations": "Estaciones",
+    "leaves": "Ausencias",
+    "reports": "Reportes",
+    "settings": "Configuración"
+  },
+  "status": {
+    "online": "En línea",
+    "offline": "Sin conexión"
+  },
+  "login": {
+    "title": "Acceso al Sistema",
+    "subtitle": "Inicia sesión para acceder al panel de control"
+  }
+}

@@ -19,6 +19,8 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Badge } from '../ui/Badge';
 import { Modal } from '../ui/Modal';
+import { formatLocalizedDate } from '../../utils/date';
+import i18n from '../../i18n';
 import { useApp } from '../../contexts/AppContext';
 import { useClockIns, useUsers, useStations, useLeaveRequests } from '../../hooks/useData';
 import { legalFramework } from '../../services/legalFramework';
@@ -189,7 +191,7 @@ export function ReportsScreen() {
         date: dateStr,
         clockIns: dayClockIns.length,
         users: dayUsers,
-        dayName: formatDate(currentDate, state.session?.user.locale || 'es-ES')
+        dayName: formatLocalizedDate(currentDate, i18n.language, 'EEE')
       });
       
       currentDate.setDate(currentDate.getDate() + 1);

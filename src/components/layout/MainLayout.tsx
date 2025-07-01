@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   Home, 
   Clock, 
@@ -16,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
+import { LanguageSelector } from '../ui/LanguageSelector';
 import { useApp } from '../../contexts/AppContext';
 import { useTheme } from '../../hooks/useTheme';
 
@@ -26,17 +28,16 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   const { state, logout, navigateTo, clearAllNotifications, setRegionCode } = useApp();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
-  const { theme, toggleTheme } = useTheme();
+  const { t } = useTranslation();
 
   const navigation = [
-    { name: 'Dashboard', icon: Home, screen: 'dashboard', roles: ['admin', 'manager', 'employee'] },
-    { name: 'Fichajes', icon: Clock, screen: 'clockins', roles: ['admin', 'manager', 'employee'] },
-    { name: 'Empleados', icon: Users, screen: 'users', roles: ['admin', 'manager'] },
-    { name: 'Estaciones', icon: MapPin, screen: 'stations', roles: ['admin', 'manager'] },
-    { name: 'Ausencias', icon: Calendar, screen: 'leaves', roles: ['admin', 'manager', 'employee'] },
-    { name: 'Reportes', icon: BarChart3, screen: 'reports', roles: ['admin', 'manager'] },
-    { name: 'Política', icon: Shield, screen: 'policy', roles: ['admin', 'manager', 'employee'] },
-    { name: 'Configuración', icon: Settings, screen: 'settings', roles: ['admin', 'manager', 'employee'] },
+    { name: t('nav.dashboard'), icon: Home, screen: 'dashboard', roles: ['admin', 'manager', 'employee'] },
+    { name: t('nav.clockins'), icon: Clock, screen: 'clockins', roles: ['admin', 'manager', 'employee'] },
+    { name: t('nav.users'), icon: Users, screen: 'users', roles: ['admin', 'manager'] },
+    { name: t('nav.stations'), icon: MapPin, screen: 'stations', roles: ['admin', 'manager'] },
+    { name: t('nav.leaves'), icon: Calendar, screen: 'leaves', roles: ['admin', 'manager', 'employee'] },
+    { name: t('nav.reports'), icon: BarChart3, screen: 'reports', roles: ['admin', 'manager'] },
+    { name: t('nav.settings'), icon: Settings, screen: 'settings', roles: ['admin', 'manager', 'employee'] },
   ];
 
   const userRole = state.session?.user.role || 'employee';
@@ -130,7 +131,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               fullWidth
               className="text-gray-600 dark:text-gray-300 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-800"
             >
-              Cerrar Sesión
+              {t('button.logout')}
             </Button>
           </div>
         </div>
@@ -150,8 +151,8 @@ export function MainLayout({ children }: MainLayoutProps) {
                 className="lg:hidden"
               />
               <div>
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  {state.currentCompany?.name || 'Workforce Management'}
+                <h1 className="text-xl font-semibold text-gray-900">
+                  {state.currentCompany?.name || t('app.title')}
                 </h1>
                 {state.appMode.mode !== 'production' && (
                   <Badge
@@ -168,8 +169,8 @@ export function MainLayout({ children }: MainLayoutProps) {
               {/* Online/Offline indicator */}
               <div className="flex items-center space-x-2">
                 <div className={`w-2 h-2 rounded-full ${state.isOnline ? 'bg-green-500' : 'bg-red-500'}`} />
-                <span className="text-sm text-gray-600 dark:text-gray-300 hidden sm:inline">
-                  {state.isOnline ? 'En línea' : 'Sin conexión'}
+                <span className="text-sm text-gray-600 hidden sm:inline">
+                  {state.isOnline ? t('status.online') : t('status.offline')}
                 </span>
               </div>
 
@@ -218,8 +219,8 @@ export function MainLayout({ children }: MainLayoutProps) {
                   className="relative"
                 />
                 {unreadNotifications > 0 && (
-                  <Badge 
-                    variant="danger" 
+                  <Badge
+                    variant="danger"
                     size="sm"
                     className="absolute -top-1 -right-1 min-w-[1.25rem] h-5 flex items-center justify-center text-xs"
                   >
@@ -227,6 +228,8 @@ export function MainLayout({ children }: MainLayoutProps) {
                   </Badge>
                 )}
               </div>
+
+              <LanguageSelector />
             </div>
           </div>
         </header>

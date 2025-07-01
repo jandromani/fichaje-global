@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { LogIn, Building2, Users, Shield, Zap } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Card, CardContent } from '../ui/Card';
@@ -8,6 +9,7 @@ import { initializeDefaultEnvironment } from '../../services/initializeDefaultEn
 export function LoginScreen() {
   const { login, state, showNotification } = useApp();
   const [isInitializing, setIsInitializing] = useState(false);
+  const { t } = useTranslation();
 
   const handleDemoLogin = async () => {
     try {
@@ -142,9 +144,9 @@ export function LoginScreen() {
           <Card className="w-full max-w-md">
             <CardContent className="space-y-6">
               <div className="text-center space-y-2">
-                <h2 className="text-2xl font-bold text-gray-900">Acceso al Sistema</h2>
+                <h2 className="text-2xl font-bold text-gray-900">{t('login.title')}</h2>
                 <p className="text-gray-600">
-                  Inicia sesión para acceder al panel de control
+                  {t('login.subtitle')}
                 </p>
               </div>
 
@@ -159,7 +161,7 @@ export function LoginScreen() {
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
                   disabled={isInitializing || state.loading}
                 >
-                  {isInitializing ? 'Inicializando Demo...' : 'Acceder al Demo'}
+                  {isInitializing ? 'Inicializando Demo...' : t('button.demoLogin')}
                 </Button>
 
                 <div className="text-center">
