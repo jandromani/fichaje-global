@@ -80,6 +80,21 @@ export interface Station extends BaseEntity {
   };
 }
 
+export interface QRTemplate extends BaseEntity {
+  name: string;
+  stationId: string;
+  companyId: string;
+  colors: {
+    foreground: string;
+    background: string;
+  };
+  logo?: string;
+  header: string;
+  footer: string;
+  instructions: Record<string, string>; // locale -> text
+  isDefault: boolean;
+}
+
 export interface ClockIn extends BaseEntity {
   userId: string;
   stationId: string;
@@ -279,6 +294,7 @@ export const STORAGE_KEYS = {
   APP_MODE: 'wmapp_mode',
   SYNC_QUEUE: 'wmapp_sync_queue',
   SETTINGS: 'wmapp_settings',
+  QR_TEMPLATES: 'wmapp_qr_templates',
 } as const;
 
 export const DEFAULT_PERMISSIONS: Record<User['role'], Permission[]> = {

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { storageManager } from '../services/storageManager';
 import { syncEngine } from '../services/syncEngine';
+import { maintenanceAgent } from '../services/maintenanceAgent';
 import type { UserSession, AppMode, SyncStatus, Company } from '../types';
 
 // ==========================================
@@ -210,6 +211,8 @@ export function AppProvider({ children }: AppProviderProps) {
 
   useEffect(() => {
     initializeApp();
+    maintenanceAgent.start();
+    return () => maintenanceAgent.stop();
   }, []);
 
   const initializeApp = async () => {

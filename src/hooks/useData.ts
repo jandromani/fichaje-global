@@ -466,6 +466,18 @@ export function useLeaveRequests() {
   });
 }
 
+export function useQRTemplates() {
+  return useData({
+    key: 'wmapp_qr_templates',
+    defaultValue: [],
+    filterFn: (tpl, filter) => {
+      const searchLower = filter.search.toLowerCase();
+      return !filter.search || tpl.name.toLowerCase().includes(searchLower);
+    },
+    sortFn: (a, b) => a.name.localeCompare(b.name)
+  });
+}
+
 // ==========================================
 // UTILIDADES
 // ==========================================
