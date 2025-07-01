@@ -15,7 +15,7 @@ import {
   Calendar,
   DollarSign
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
+import { Card, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Badge } from '../ui/Badge';
@@ -35,7 +35,6 @@ export function UsersScreen() {
     filter,
     setFilter,
     pagination,
-    setPage,
     nextPage,
     prevPage
   } = useUsers();
@@ -511,7 +510,7 @@ export function UsersScreen() {
               </label>
               <select
                 value={formData.role || 'employee'}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value as User['role'] })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="employee">Empleado</option>
@@ -618,7 +617,7 @@ export function UsersScreen() {
               </label>
               <select
                 value={formData.role || 'employee'}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value as User['role'] })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="employee">Empleado</option>

@@ -1,4 +1,3 @@
-import { APP_CONFIG } from '../types';
 import type { QRMetadata, Station } from '../types';
 
 // ==========================================
@@ -11,7 +10,7 @@ interface QRGenerationOptions {
   isTemporary?: boolean;
   expiresIn?: number; // milliseconds
   templateId?: string;
-  customData?: Record<string, any>;
+  customData?: Record<string, unknown>;
 }
 
 interface QRValidationResult {
@@ -137,7 +136,7 @@ class QREngine {
       }
 
       // Parsear JSON
-      let payload: any;
+      let payload: Record<string, unknown>;
       try {
         payload = JSON.parse(decodedData);
       } catch {
@@ -224,10 +223,12 @@ class QREngine {
   async refreshStationQRs(companyId: string): Promise<{ stationId: string; qrCode: string }[]> {
     try {
       // En una implementación real, esto cargaría las estaciones desde la base de datos
-      const stations = JSON.parse(localStorage.getItem('wmapp_stations') || '[]')
-        .filter((station: any) => station.companyId === companyId && station.isActive);
+      const stations = (JSON.parse(localStorage.getItem('wmapp_stations') || '[]') as Record<string, unknown>[])
+        .filter(s =>
+          (s.companyId as string) === companyId && Boolean((s as { isActive?: boolean }).isActive)
+        );
 
-      const refreshedQRs = [];
+      const refreshedQRs: { stationId: string; qrCode: string }[] = [];
 
       for (const station of stations) {
         const newQR = await this.generateStationQR(station.id, companyId);
@@ -262,12 +263,13 @@ class QREngine {
   // MÉTODOS PRIVADOS
   // ==========================================
 
-  private hasRequiredFields(payload: any): boolean {
-    return payload &&
-           typeof payload.stationId === 'string' &&
-           typeof payload.companyId === 'string' &&
-           typeof payload.timestamp === 'string' &&
-           typeof payload.version === 'string';
+  private hasRequiredFields(payload: unknown): boolean {
+    const data = payload as Record<string, unknown>;
+    return data &&
+           typeof data.stationId === 'string' &&
+           typeof data.companyId === 'string' &&
+           typeof data.timestamp === 'string' &&
+           typeof data.version === 'string';
   }
 
   private isVersionCompatible(version: string): boolean {
@@ -290,7 +292,7 @@ class QREngine {
     }
   }
 
-  private async generateSignature(payload: any): Promise<string> {
+  private async generateSignature(payload: unknown): Promise<string> {
     if (!this.cryptoAvailable) return '';
 
     try {
@@ -302,7 +304,8 @@ class QREngine {
       );
 
       // Crear string para firmar (excluir la firma misma)
-      const { signature, ...dataToSign } = payload;
+      const { signature, ...dataToSign } = payload as Record<string, unknown>;
+      void signature;
       const dataString = JSON.stringify(dataToSign);
       const encoder = new TextEncoder();
       const data = encoder.encode(dataString);
@@ -318,8 +321,8 @@ class QREngine {
     }
   }
 
-  private async validateSignature(payload: any): Promise<boolean> {
-    if (!this.cryptoAvailable || !payload.signature) return true;
+  private async validateSignature(payload: unknown): Promise<boolean> {
+    if (!this.cryptoAvailable || !(payload as Record<string, unknown>).signature) return true;
 
     try {
       // En producción, usar la misma clave que se usó para firmar

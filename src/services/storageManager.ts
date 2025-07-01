@@ -28,8 +28,51 @@ class StorageManager {
     backup: true
   };
 
+  private sessionKeyId = 'wmapp_enc_key';
+
   private compressionThreshold = 50 * 1024; // 50KB
   private maxRetries = 3;
+
+  // ==========================================
+  // MÉTODOS DE CIFRADO
+  // ==========================================
+
+  private getKey(): Promise<CryptoKey | null> {
+    const stored = sessionStorage.getItem(this.sessionKeyId);
+    if (!stored) return Promise.resolve(null);
+    const raw = Uint8Array.from(atob(stored), c => c.charCodeAt(0));
+    return crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']);
+  }
+
+  setEncryptionKey(base64Key: string): void {
+    sessionStorage.setItem(this.sessionKeyId, base64Key);
+  }
+
+  clearEncryptionKey(): void {
+    sessionStorage.removeItem(this.sessionKeyId);
+  }
+
+  private async encrypt(data: string): Promise<string> {
+    const key = await this.getKey();
+    if (!key) throw new Error('Encryption key not available');
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encoded = new TextEncoder().encode(data);
+    const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoded);
+    const result = new Uint8Array(iv.byteLength + cipher.byteLength);
+    result.set(iv, 0);
+    result.set(new Uint8Array(cipher), iv.byteLength);
+    return btoa(String.fromCharCode(...result));
+  }
+
+  private async decrypt(data: string): Promise<string> {
+    const key = await this.getKey();
+    if (!key) throw new Error('Encryption key not available');
+    const bytes = Uint8Array.from(atob(data), c => c.charCodeAt(0));
+    const iv = bytes.slice(0, 12);
+    const cipher = bytes.slice(12);
+    const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipher);
+    return new TextDecoder().decode(plain);
+  }
 
   // ==========================================
   // MÉTODOS PRINCIPALES
@@ -109,6 +152,82 @@ class StorageManager {
     }
   }
 
+  async setAsync<T>(key: string, value: T, config?: Partial<StorageConfig>): Promise<boolean> {
+    const finalConfig = { ...this.config, ...config };
+
+    if (finalConfig.encrypt && !sessionStorage.getItem(this.sessionKeyId)) {
+      throw new Error('No active encryption key');
+    }
+
+    try {
+      let processedValue: unknown = value;
+      let compressed = false;
+      const serialized = JSON.stringify(value);
+      if (finalConfig.compress && serialized.length > this.compressionThreshold) {
+        processedValue = this.compress(value);
+        compressed = true;
+      }
+
+      if (finalConfig.encrypt) {
+        processedValue = await this.encrypt(JSON.stringify(processedValue));
+      }
+
+      const metadata: StorageMetadata = {
+        version: APP_CONFIG.STORAGE_VERSION,
+        createdAt: this.getExistingCreatedAt(key) || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        size: serialized.length,
+        compressed,
+        checksum: finalConfig.validate ? this.generateChecksum(serialized) : undefined
+      };
+
+      const storageItem = {
+        data: processedValue,
+        metadata,
+        encrypted: finalConfig.encrypt
+      };
+
+      localStorage.setItem(key, JSON.stringify(storageItem));
+      if (finalConfig.backup) {
+        this.createBackup(key, storageItem);
+      }
+      return true;
+    } catch (error) {
+      console.error(`[StorageManager] Error writing key ${key}:`, error);
+      return false;
+    }
+  }
+
+  async getAsync<T>(key: string, defaultValue: T | null = null): Promise<T | null> {
+    try {
+      const item = localStorage.getItem(key);
+      if (!item) return defaultValue;
+
+      const parsed = JSON.parse(item);
+      if (parsed.encrypted) {
+        if (!sessionStorage.getItem(this.sessionKeyId)) {
+          throw new Error('No active encryption key');
+        }
+        const decrypted = await this.decrypt(parsed.data);
+        parsed.data = JSON.parse(decrypted);
+      }
+
+      if (this.hasMetadata(parsed)) {
+        const { data, metadata } = parsed;
+        if (this.config.validate && !this.validateData(data, metadata)) {
+          console.warn(`[StorageManager] Data validation failed for key: ${key}`);
+          return defaultValue;
+        }
+        return metadata.compressed ? this.decompress(data) : data;
+      }
+
+      return parsed;
+    } catch (error) {
+      console.error(`[StorageManager] Error reading key ${key}:`, error);
+      return defaultValue;
+    }
+  }
+
   remove(key: string): boolean {
     try {
       // Crear backup antes de eliminar
@@ -154,7 +273,7 @@ class StorageManager {
       keysToCheck.forEach(key => {
         const data = this.get(key, []);
         if (Array.isArray(data)) {
-          const filtered = data.filter((item: any) => item.userId !== userId);
+          const filtered = data.filter(item => (item as { userId?: string }).userId !== userId);
           if (filtered.length !== data.length) {
             success = this.set(key, filtered) && success;
           }
@@ -175,10 +294,10 @@ class StorageManager {
 
       keysToCheck.forEach(key => {
         if (key === STORAGE_KEYS.SESSION) return; // Preserve session
-        
+
         const data = this.get(key, []);
         if (Array.isArray(data)) {
-          const filtered = data.filter((item: any) => item.companyId !== companyId);
+          const filtered = data.filter(item => (item as { companyId?: string }).companyId !== companyId);
           if (filtered.length !== data.length) {
             success = this.set(key, filtered) && success;
           }
@@ -200,7 +319,7 @@ class StorageManager {
       keysToCheck.forEach(key => {
         const data = this.get(key, []);
         if (Array.isArray(data)) {
-          const filtered = data.filter((item: any) => !item.isDemo);
+          const filtered = data.filter(item => !(item as { isDemo?: boolean }).isDemo);
           success = this.set(key, filtered) && success;
         }
       });
@@ -209,6 +328,24 @@ class StorageManager {
     } catch (error) {
       console.error('[StorageManager] Error clearing demo data:', error);
       return false;
+    }
+  }
+
+  purgeExpiredData(): void {
+    try {
+      const now = Date.now();
+      Object.values(STORAGE_KEYS).forEach(key => {
+        const data = this.get<unknown[]>(key, []);
+        if (Array.isArray(data)) {
+          const filtered = data.filter(item => !item.expiresAt || new Date(item.expiresAt).getTime() > now);
+          if (filtered.length !== data.length) {
+            this.set(key, filtered);
+            console.log(`[StorageManager] Purged expired items from ${key}`);
+          }
+        }
+      });
+    } catch (error) {
+      console.error('[StorageManager] Error purging expired data:', error);
     }
   }
 
@@ -256,7 +393,7 @@ class StorageManager {
   }
 
   exportData(): string {
-    const data: Record<string, any> = {};
+    const data: Record<string, unknown> = {};
     
     Object.values(STORAGE_KEYS).forEach(key => {
       const value = this.get(key);
@@ -304,11 +441,11 @@ class StorageManager {
   // MÉTODOS PRIVADOS
   // ==========================================
 
-  private hasMetadata(obj: any): obj is { data: any; metadata: StorageMetadata } {
+  private hasMetadata(obj: unknown): obj is { data: unknown; metadata: StorageMetadata } {
     return obj && typeof obj === 'object' && 'data' in obj && 'metadata' in obj;
   }
 
-  private validateData(data: any, metadata: StorageMetadata): boolean {
+  private validateData(data: unknown, metadata: StorageMetadata): boolean {
     if (!metadata.checksum) return true;
     
     const currentChecksum = this.generateChecksum(JSON.stringify(data));
@@ -325,13 +462,13 @@ class StorageManager {
     return hash.toString(16);
   }
 
-  private compress(data: any): string {
+  private compress(data: unknown): string {
     // Implementación simple de compresión (en producción usar LZString o similar)
     const json = JSON.stringify(data);
     return btoa(json);
   }
 
-  private decompress(compressedData: string): any {
+  private decompress(compressedData: string): unknown {
     try {
       const json = atob(compressedData);
       return JSON.parse(json);
@@ -354,7 +491,7 @@ class StorageManager {
     return null;
   }
 
-  private createBackup(key: string, data: any): void {
+  private createBackup(key: string, data: unknown): void {
     try {
       const backupKey = `backup_${key}_${Date.now()}`;
       localStorage.setItem(backupKey, JSON.stringify(data));
@@ -368,7 +505,7 @@ class StorageManager {
 
   private createFullBackup(): void {
     try {
-      const backup: Record<string, any> = {};
+      const backup: Record<string, unknown> = {};
       
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -425,7 +562,7 @@ class StorageManager {
     });
   }
 
-  private isQuotaExceeded(error: any): boolean {
+  private isQuotaExceeded(error: unknown): boolean {
     return error instanceof DOMException && (
       error.code === 22 ||
       error.code === 1014 ||
@@ -463,3 +600,9 @@ class StorageManager {
 
 // Singleton instance
 export const storageManager = new StorageManager();
+
+// Auto-purge expired data on startup and daily
+if (typeof window !== 'undefined') {
+  storageManager.purgeExpiredData();
+  setInterval(() => storageManager.purgeExpiredData(), 24 * 60 * 60 * 1000);
+}

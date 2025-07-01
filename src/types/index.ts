@@ -10,6 +10,14 @@ export interface BaseEntity {
   syncStatus: 'pending' | 'synced' | 'error';
   isDemo?: boolean;
   companyId: string;
+  /** Timestamp for TTL based cleanup */
+  expiresAt?: string;
+  /** Last modification time for conflict resolution */
+  lastModifiedAt?: string;
+  /** User id that last modified the record */
+  modifiedBy?: string;
+  /** Flag used when a conflict is detected during sync */
+  conflict?: boolean;
 }
 
 export interface User extends BaseEntity {
@@ -202,7 +210,7 @@ export interface SyncQueueItem {
   id: string;
   type: 'clockin' | 'leave' | 'user' | 'notification';
   action: 'create' | 'update' | 'delete';
-  data: any;
+  data: unknown;
   priority: number;
   attempts: number;
   maxAttempts: number;

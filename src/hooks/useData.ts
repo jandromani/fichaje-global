@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { storageManager } from '../services/storageManager';
 import { syncEngine } from '../services/syncEngine';
-import type { BaseEntity, LoadingState, FilterState, PaginationState } from '../types';
+import type { BaseEntity, LoadingState, FilterState, PaginationState, SyncQueueItem } from '../types';
 
 // ==========================================
 // HOOK GENÉRICO PARA GESTIÓN DE DATOS
@@ -168,7 +168,7 @@ export function useData<T extends BaseEntity>(options: UseDataOptions<T>) {
       // Agregar a cola de sincronización
       if (autoSync) {
         syncEngine.addToQueue({
-          type: key.replace('wmapp_', '') as any,
+          type: key.replace('wmapp_', '') as SyncQueueItem['type'],
           action: 'create',
           data: fullItem,
           maxAttempts: 3
@@ -214,7 +214,7 @@ export function useData<T extends BaseEntity>(options: UseDataOptions<T>) {
       // Agregar a cola de sincronización
       if (autoSync) {
         syncEngine.addToQueue({
-          type: key.replace('wmapp_', '') as any,
+          type: key.replace('wmapp_', '') as SyncQueueItem['type'],
           action: 'update',
           data: updatedItem,
           maxAttempts: 3
@@ -250,7 +250,7 @@ export function useData<T extends BaseEntity>(options: UseDataOptions<T>) {
       // Agregar a cola de sincronización
       if (autoSync) {
         syncEngine.addToQueue({
-          type: key.replace('wmapp_', '') as any,
+          type: key.replace('wmapp_', '') as SyncQueueItem['type'],
           action: 'delete',
           data: { id },
           maxAttempts: 3
