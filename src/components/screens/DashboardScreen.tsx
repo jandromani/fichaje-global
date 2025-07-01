@@ -14,6 +14,8 @@ import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { useApp } from '../../contexts/AppContext';
 import { useClockIns, useUsers, useLeaveRequests, useStations } from '../../hooks/useData';
+import { formatLocalizedDate } from '../../utils/date';
+import i18n from '../../i18n';
 
 export function DashboardScreen() {
   const { state, navigateTo } = useApp();
@@ -70,12 +72,7 @@ export function DashboardScreen() {
         </div>
         <div className="text-right">
           <p className="text-sm text-gray-500">
-            {new Date().toLocaleDateString('es-ES', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
+            {formatLocalizedDate(new Date(), i18n.language, 'PPPP')}
           </p>
         </div>
       </div>
@@ -226,7 +223,7 @@ export function DashboardScreen() {
                         {userRole === 'employee' ? leave.type : `${user?.firstName} ${user?.lastName}`}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {new Date(leave.startDate).toLocaleDateString('es-ES')} - {new Date(leave.endDate).toLocaleDateString('es-ES')}
+                        {formatLocalizedDate(new Date(leave.startDate), i18n.language)} - {formatLocalizedDate(new Date(leave.endDate), i18n.language)}
                       </p>
                     </div>
                     <Badge 

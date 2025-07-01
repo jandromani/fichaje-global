@@ -1,0 +1,26 @@
+{
+  "app": { "title": "Gestion du Personnel" },
+  "button": {
+    "clockIn": "Pointer Entrée",
+    "clockOut": "Pointer Sortie",
+    "demoLogin": "Accéder à la Démo",
+    "logout": "Se Déconnecter"
+  },
+  "nav": {
+    "dashboard": "Tableau de Bord",
+    "clockins": "Pointages",
+    "users": "Employés",
+    "stations": "Stations",
+    "leaves": "Absences",
+    "reports": "Rapports",
+    "settings": "Paramètres"
+  },
+  "status": {
+    "online": "En ligne",
+    "offline": "Hors ligne"
+  },
+  "login": {
+    "title": "Accès au Système",
+    "subtitle": "Connectez-vous pour accéder au panneau de contrôle"
+  }
+}

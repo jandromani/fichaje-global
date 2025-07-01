@@ -18,6 +18,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
+import { formatLocalizedDate } from '../../utils/date';
+import i18n from '../../i18n';
 import { Badge } from '../ui/Badge';
 import { Modal } from '../ui/Modal';
 import { useApp } from '../../contexts/AppContext';
@@ -740,7 +742,7 @@ export function UsersScreen() {
                   <div className="flex items-center space-x-2">
                     <Calendar className="w-4 h-4 text-gray-400" />
                     <span className="text-sm">
-                      Inicio: {new Date(selectedUser.startDate).toLocaleDateString('es-ES')}
+                      Inicio: {formatLocalizedDate(new Date(selectedUser.startDate), i18n.language)}
                     </span>
                   </div>
                   

@@ -18,6 +18,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Badge } from '../ui/Badge';
+import { formatLocalizedDate } from '../../utils/date';
+import i18n from '../../i18n';
 import { Modal } from '../ui/Modal';
 import { useApp } from '../../contexts/AppContext';
 import { useLeaveRequests, useUsers } from '../../hooks/useData';
@@ -437,7 +439,7 @@ export function LeavesScreen() {
                       <div>
                         <span className="font-medium">Fechas:</span>
                         <p>
-                          {new Date(request.startDate).toLocaleDateString('es-ES')} - {new Date(request.endDate).toLocaleDateString('es-ES')}
+                          {formatLocalizedDate(new Date(request.startDate), i18n.language)} - {formatLocalizedDate(new Date(request.endDate), i18n.language)}
                         </p>
                       </div>
                       
@@ -448,7 +450,7 @@ export function LeavesScreen() {
                       
                       <div>
                         <span className="font-medium">Solicitado:</span>
-                        <p>{new Date(request.createdAt).toLocaleDateString('es-ES')}</p>
+                        <p>{formatLocalizedDate(new Date(request.createdAt), i18n.language)}</p>
                       </div>
                     </div>
                     
@@ -458,7 +460,7 @@ export function LeavesScreen() {
                           {request.status === 'approved' ? 'Aprobado' : 'Rechazado'} por:
                         </span>
                         <span className="ml-1">
-                          {approver.firstName} {approver.lastName} el {new Date(request.approvedAt).toLocaleDateString('es-ES')}
+                          {approver.firstName} {approver.lastName} el {formatLocalizedDate(new Date(request.approvedAt), i18n.language)}
                         </span>
                       </div>
                     )}
@@ -721,12 +723,12 @@ export function LeavesScreen() {
                 <div className="space-y-3 text-sm">
                   <div>
                     <span className="font-medium text-gray-700">Fecha de inicio:</span>
-                    <p>{new Date(selectedRequest.startDate).toLocaleDateString('es-ES')}</p>
+                    <p>{formatLocalizedDate(new Date(selectedRequest.startDate), i18n.language)}</p>
                   </div>
                   
                   <div>
                     <span className="font-medium text-gray-700">Fecha de fin:</span>
-                    <p>{new Date(selectedRequest.endDate).toLocaleDateString('es-ES')}</p>
+                    <p>{formatLocalizedDate(new Date(selectedRequest.endDate), i18n.language)}</p>
                   </div>
                   
                   <div>
@@ -749,7 +751,7 @@ export function LeavesScreen() {
                 <div className="space-y-3 text-sm">
                   <div>
                     <span className="font-medium text-gray-700">Solicitado el:</span>
-                    <p>{new Date(selectedRequest.createdAt).toLocaleDateString('es-ES')}</p>
+                    <p>{formatLocalizedDate(new Date(selectedRequest.createdAt), i18n.language)}</p>
                   </div>
                   
                   {selectedRequest.approvedAt && (
@@ -757,7 +759,7 @@ export function LeavesScreen() {
                       <span className="font-medium text-gray-700">
                         {selectedRequest.status === 'approved' ? 'Aprobado' : 'Rechazado'} el:
                       </span>
-                      <p>{new Date(selectedRequest.approvedAt).toLocaleDateString('es-ES')}</p>
+                      <p>{formatLocalizedDate(new Date(selectedRequest.approvedAt), i18n.language)}</p>
                     </div>
                   )}
                   

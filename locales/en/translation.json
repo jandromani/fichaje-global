@@ -1,0 +1,26 @@
+{
+  "app": { "title": "Workforce Management" },
+  "button": {
+    "clockIn": "Clock In",
+    "clockOut": "Clock Out",
+    "demoLogin": "Access Demo",
+    "logout": "Log Out"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "clockins": "Clock-ins",
+    "users": "Employees",
+    "stations": "Stations",
+    "leaves": "Leaves",
+    "reports": "Reports",
+    "settings": "Settings"
+  },
+  "status": {
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "login": {
+    "title": "System Access",
+    "subtitle": "Sign in to access the control panel"
+  }
+}
