@@ -181,6 +181,14 @@ export function ClockInScreen() {
   // ==========================================
 
   const handleManualClockIn = async (stationId: string, type: 'in' | 'out') => {
+    if (state.appMode.mode === 'demo') {
+      showNotification({
+        type: 'warning',
+        title: 'Función deshabilitada',
+        message: 'El fichaje real está deshabilitado en modo demo'
+      });
+      return;
+    }
     if (!currentUser) return;
 
     const station = stations?.find(s => s.id === stationId);
@@ -241,6 +249,14 @@ export function ClockInScreen() {
   // ==========================================
 
   const processQRResult = async (type: 'in' | 'out') => {
+    if (state.appMode.mode === 'demo') {
+      showNotification({
+        type: 'warning',
+        title: 'Función deshabilitada',
+        message: 'El fichaje real está deshabilitado en modo demo'
+      });
+      return;
+    }
     if (!scanResult?.success || !scanResult.station || !currentUser) return;
 
     const clockInData = {

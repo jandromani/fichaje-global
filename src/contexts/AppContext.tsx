@@ -2,7 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect, ReactNode } fr
 import bcrypt from 'bcryptjs';
 import { storageManager } from '../services/storageManager';
 import { syncEngine } from '../services/syncEngine';
-import { getRegionCode, setRegionOverride } from '../services/regionService';
+import { legalFramework } from '../services/legalFramework';
 import type { UserSession, AppMode, SyncStatus, Company } from '../types';
 
 // ==========================================
@@ -253,6 +253,7 @@ export function AppProvider({ children }: AppProviderProps) {
       const savedAppMode = storageManager.get<AppMode>('wmapp_mode');
       if (savedAppMode) {
         dispatch({ type: 'SET_APP_MODE', payload: savedAppMode });
+        console.log('[AppProvider] Mode:', savedAppMode.mode);
       }
 
       const savedTheme = storageManager.get<'light' | 'dark'>('wmapp_theme', 'light');
@@ -361,6 +362,8 @@ export function AppProvider({ children }: AppProviderProps) {
       };
 
       console.log('[AppProvider] Session created successfully');
+
+      legalFramework.recordConsent(user.id);
 
       // Guardar sesión
       storageManager.set('wmapp_session', session);

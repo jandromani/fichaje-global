@@ -100,6 +100,14 @@ export function SettingsScreen() {
   };
 
   const handleExportData = (format: 'json' | 'csv') => {
+    if (state.appMode.mode === 'demo') {
+      showNotification({
+        type: 'warning',
+        title: 'Función deshabilitada',
+        message: 'La exportación está deshabilitada en modo demo'
+      });
+      return;
+    }
     try {
       const data = storageManager.exportData();
       
@@ -134,6 +142,14 @@ export function SettingsScreen() {
   };
 
   const handleImportData = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (state.appMode.mode === 'demo') {
+      showNotification({
+        type: 'warning',
+        title: 'Función deshabilitada',
+        message: 'La importación está deshabilitada en modo demo'
+      });
+      return;
+    }
     const file = event.target.files?.[0];
     if (!file) return;
 
