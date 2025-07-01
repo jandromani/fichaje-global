@@ -1,5 +1,6 @@
 import { APP_CONFIG } from '../types';
 import { storageManager } from './storageManager';
+import { syncBridge } from './syncBridge';
 import type { SyncQueueItem, SyncStatus } from '../types';
 
 // ==========================================
@@ -26,7 +27,7 @@ interface SyncLog {
   operation: string;
   status: 'success' | 'error' | 'warning';
   message: string;
-  data?: any;
+  data?: unknown;
 }
 
 class SyncEngine {
@@ -267,10 +268,20 @@ class SyncEngine {
     try {
       this.log(`Processing sync item: ${item.type}/${item.action}`, 'success', item);
 
-      // Simulate API call - replace with actual sync logic
-      const success = await this.simulateSync(item);
+      const result = await this.performSync(item);
 
-      if (success) {
+      if (result.conflict) {
+        this.log(`Conflict detected for ${item.type}/${item.action}`, 'warning');
+        const queue = this.getQueue();
+        const index = queue.findIndex(q => q.id === item.id);
+        if (index > -1) {
+          queue[index].error = 'conflict';
+          this.saveQueue(queue);
+        }
+        return;
+      }
+
+      if (result.success) {
         this.removeFromQueue(item.id);
         this.log(`Sync successful: ${item.type}/${item.action}`, 'success');
       } else {
@@ -282,7 +293,7 @@ class SyncEngine {
     }
   }
 
-  private async handleSyncError(item: SyncQueueItem, error: any): Promise<void> {
+  private async handleSyncError(item: SyncQueueItem, error: unknown): Promise<void> {
     const queue = this.getQueue();
     const queueIndex = queue.findIndex(q => q.id === item.id);
     
@@ -318,18 +329,16 @@ class SyncEngine {
   // MÉTODOS DE SIMULACIÓN (REEMPLAZAR EN PRODUCCIÓN)
   // ==========================================
 
-  private async simulateSync(item: SyncQueueItem): Promise<boolean> {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500));
-    
-    // Simulate occasional failures for testing
-    const failureRate = 0.1; // 10% failure rate
-    if (Math.random() < failureRate) {
-      throw new Error('Simulated network error');
+  private async performSync(item: SyncQueueItem): Promise<{ success: boolean; conflict?: boolean }> {
+    try {
+      const response = await syncBridge.syncRecords({ records: [item] });
+      return { success: true, conflict: response.conflict };
+    } catch (error) {
+      if (error instanceof Response && error.status === 409) {
+        return { success: false, conflict: true };
+      }
+      throw error;
     }
-
-    // In production, implement actual API calls here based on item.type and item.action
-    return true;
   }
 
   // ==========================================
@@ -348,7 +357,7 @@ class SyncEngine {
     return `sync_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  private log(message: string, status: SyncLog['status'], data?: any): void {
+  private log(message: string, status: SyncLog['status'], data?: unknown): void {
     const logEntry: SyncLog = {
       timestamp: new Date().toISOString(),
       operation: 'sync',

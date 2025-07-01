@@ -292,7 +292,7 @@ export function AppProvider({ children }: AppProviderProps) {
       const expectedHash = hashPassword(password);
       console.log('[AppProvider] Expected hash for password "' + password + '":', expectedHash);
       
-      const user = users.find((u: any) => {
+      const user = users.find((u: Record<string, unknown>) => {
         const emailMatch = u.email.toLowerCase() === email.toLowerCase();
         const passwordMatch = u.passwordHash === expectedHash;
         
@@ -315,7 +315,7 @@ export function AppProvider({ children }: AppProviderProps) {
 
       // Cargar empresa del usuario
       const companies = storageManager.get('wmapp_companies', []);
-      const company = companies.find((c: any) => c.id === user.companyId);
+      const company = companies.find((c: Record<string, unknown>) => (c.id as string) === user.companyId);
 
       if (!company) {
         console.log('[AppProvider] Company not found for user');
@@ -477,6 +477,7 @@ export function AppProvider({ children }: AppProviderProps) {
         autoClose: true
       });
     } catch (error) {
+      console.error('Sync error:', error);
       showNotification({
         type: 'error',
         title: 'Sync Failed',
