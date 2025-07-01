@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { storageManager } from '../services/storageManager';
 import { syncEngine } from '../services/syncEngine';
-import { maintenanceAgent } from '../services/maintenanceAgent';
+import { startLegalPurge } from '../services/legalEngine';
 import type { UserSession, AppMode, SyncStatus, Company } from '../types';
 
 // ==========================================
@@ -211,8 +211,6 @@ export function AppProvider({ children }: AppProviderProps) {
 
   useEffect(() => {
     initializeApp();
-    maintenanceAgent.start();
-    return () => maintenanceAgent.stop();
   }, []);
 
   const initializeApp = async () => {
@@ -241,6 +239,8 @@ export function AppProvider({ children }: AppProviderProps) {
       // Cargar estado de sincronización
       const syncStatus = syncEngine.getStatus();
       dispatch({ type: 'SET_SYNC_STATUS', payload: syncStatus });
+
+      startLegalPurge();
 
       console.log('[AppProvider] App initialized successfully');
 
