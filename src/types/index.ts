@@ -7,7 +7,7 @@ export interface BaseEntity {
   createdAt: string;
   updatedAt: string;
   version: number;
-  syncStatus: 'pending' | 'synced' | 'error';
+  syncStatus: 'pending' | 'synced' | 'error' | 'conflicted';
   isDemo?: boolean;
   companyId: string;
   /** Timestamp for TTL based cleanup */

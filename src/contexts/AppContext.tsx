@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import bcrypt from 'bcryptjs';
+import React, { createContext, useContext, useReducer, useEffect, ReactNode, useRef } from 'react';
 import { storageManager } from '../services/storageManager';
 import { syncEngine } from '../services/syncEngine';
 import { legalFramework } from '../services/legalFramework';
@@ -220,6 +219,7 @@ interface AppProviderProps {
 export function AppProvider({ children }: AppProviderProps) {
   const [state, dispatch] = useReducer(appReducer, initialState);
   const navigationHistory: string[] = [];
+  const prevSyncStatusRef = useRef<SyncStatus>(syncEngine.getStatus());
 
   // ==========================================
   // INICIALIZACIÓN
@@ -288,8 +288,14 @@ export function AppProvider({ children }: AppProviderProps) {
 
   const setupEventListeners = () => {
     // Online/Offline status
-    const handleOnline = () => dispatch({ type: 'SET_ONLINE_STATUS', payload: true });
-    const handleOffline = () => dispatch({ type: 'SET_ONLINE_STATUS', payload: false });
+    const handleOnline = () => {
+      dispatch({ type: 'SET_ONLINE_STATUS', payload: true });
+      showNotification({ type: 'info', title: 'Conexión restablecida', message: 'Se reanudó la sincronización', autoClose: true });
+    };
+    const handleOffline = () => {
+      dispatch({ type: 'SET_ONLINE_STATUS', payload: false });
+      showNotification({ type: 'warning', title: 'Sin conexión', message: 'La aplicación está sin conexión' });
+    };
     
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -297,6 +303,14 @@ export function AppProvider({ children }: AppProviderProps) {
     // Sync status changes
     const unsubscribeSync = syncEngine.onStatusChange((status) => {
       dispatch({ type: 'SET_SYNC_STATUS', payload: status });
+
+      const prev = prevSyncStatusRef.current;
+      if (status.errorCount > prev.errorCount) {
+        showNotification({ type: 'error', title: 'Error de sincronización', message: 'Algunos datos no pudieron sincronizarse' });
+      } else if (prev.pendingCount > 0 && status.pendingCount === 0 && !status.isProcessing) {
+        showNotification({ type: 'success', title: 'Sincronización completa', message: 'Todos los datos están sincronizados', autoClose: true });
+      }
+      prevSyncStatusRef.current = status;
     });
 
     // Cleanup
