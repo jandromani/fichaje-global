@@ -247,12 +247,14 @@ class EnvironmentInitializer {
           lng: -3.7038,
           address: 'Calle Principal 123, Madrid'
         },
-        qrCode: await qrEngine.generateStationQR('demo_station_001', companyId),
+        qrCode: await qrEngine.generateStationQR('demo_station_001', companyId, { language: 'es-ES', mode: 'demo' }),
         qrMetadata: {
           stationId: 'demo_station_001',
           companyId,
           timestamp: now,
           version: '1.0',
+          language: 'es-ES',
+          mode: 'demo',
           isTemporary: false
         },
         isActive: true,
@@ -279,12 +281,14 @@ class EnvironmentInitializer {
           lng: -3.7040,
           address: 'Almacén - Planta Baja'
         },
-        qrCode: await qrEngine.generateStationQR('demo_station_002', companyId),
+        qrCode: await qrEngine.generateStationQR('demo_station_002', companyId, { language: 'es-ES', mode: 'demo' }),
         qrMetadata: {
           stationId: 'demo_station_002',
           companyId,
           timestamp: now,
           version: '1.0',
+          language: 'es-ES',
+          mode: 'demo',
           isTemporary: false
         },
         isActive: true,

@@ -10,7 +10,9 @@ interface QRGenerationOptions {
   isTemporary?: boolean;
   expiresIn?: number; // milliseconds
   templateId?: string;
-  customData?: Record<string, unknown>;
+  customData?: Record<string, any>;
+  language?: string;
+  mode?: 'demo' | 'production';
 }
 
 interface QRValidationResult {
@@ -24,6 +26,7 @@ class QREngine {
   private readonly version = '1.0';
   private readonly compressionThreshold = 500;
   private cryptoAvailable = false;
+  private secretKey: CryptoKey | null = null;
 
   constructor() {
     this.initializeCrypto();
@@ -37,6 +40,22 @@ class QREngine {
     try {
       if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
         this.cryptoAvailable = true;
+        const storedSecret = localStorage.getItem('wmapp_qr_secret');
+        let secret: Uint8Array;
+        if (storedSecret) {
+          secret = Uint8Array.from(atob(storedSecret), c => c.charCodeAt(0));
+        } else {
+          secret = new Uint8Array(32);
+          window.crypto.getRandomValues(secret);
+          localStorage.setItem('wmapp_qr_secret', btoa(String.fromCharCode(...secret)));
+        }
+        this.secretKey = await window.crypto.subtle.importKey(
+          'raw',
+          secret,
+          { name: 'HMAC', hash: 'SHA-256' },
+          false,
+          ['sign', 'verify']
+        );
         console.log('[QREngine] Crypto API available - signatures enabled');
       } else {
         console.warn('[QREngine] Crypto API not available - signatures disabled');
@@ -53,7 +72,7 @@ class QREngine {
   async generateQR(options: QRGenerationOptions): Promise<string> {
     try {
       const now = new Date().toISOString();
-      const expiresAt = options.expiresIn 
+      const expiresAt = options.expiresIn
         ? new Date(Date.now() + options.expiresIn).toISOString()
         : undefined;
 
@@ -62,6 +81,8 @@ class QREngine {
         companyId: options.companyId,
         timestamp: now,
         version: this.version,
+        language: options.language || navigator.language || 'en',
+        mode: options.mode || 'demo',
         isTemporary: options.isTemporary || false,
         templateId: options.templateId,
         expiresAt
@@ -94,25 +115,34 @@ class QREngine {
     }
   }
 
-  async generateStationQR(stationId: string, companyId: string): Promise<string> {
+  async generateStationQR(
+    stationId: string,
+    companyId: string,
+    options?: { language?: string; mode?: 'demo' | 'production' }
+  ): Promise<string> {
     return this.generateQR({
       stationId,
       companyId,
-      isTemporary: false
+      isTemporary: false,
+      language: options?.language,
+      mode: options?.mode
     });
   }
 
   async generateTemporaryQR(
-    stationId: string, 
-    companyId: string, 
-    expiresInHours: number = 24
+    stationId: string,
+    companyId: string,
+    expiresInHours: number = 24,
+    options?: { language?: string; mode?: 'demo' | 'production' }
   ): Promise<string> {
     return this.generateQR({
       stationId,
       companyId,
       isTemporary: true,
       expiresIn: expiresInHours * 60 * 60 * 1000,
-      templateId: `temp_${Date.now()}`
+      templateId: `temp_${Date.now()}`,
+      language: options?.language,
+      mode: options?.mode
     });
   }
 
@@ -153,6 +183,8 @@ class QREngine {
         companyId: payload.companyId,
         timestamp: payload.timestamp,
         version: payload.version,
+        language: payload.language,
+        mode: payload.mode,
         signature: payload.signature,
         expiresAt: payload.expiresAt,
         isTemporary: payload.isTemporary || false,
@@ -231,7 +263,8 @@ class QREngine {
       const refreshedQRs: { stationId: string; qrCode: string }[] = [];
 
       for (const station of stations) {
-        const newQR = await this.generateStationQR(station.id, companyId);
+        const appMode = JSON.parse(localStorage.getItem('wmapp_mode') || '{"mode":"demo"}');
+        const newQR = await this.generateStationQR(station.id, companyId, { language: navigator.language || 'en', mode: appMode.mode });
         
         // Actualizar el QR en la estación
         station.qrCode = newQR;
@@ -240,6 +273,8 @@ class QREngine {
           companyId,
           timestamp: new Date().toISOString(),
           version: this.version,
+          language: navigator.language || 'en',
+          mode: appMode.mode,
           isTemporary: false
         };
 
@@ -263,13 +298,14 @@ class QREngine {
   // MÉTODOS PRIVADOS
   // ==========================================
 
-  private hasRequiredFields(payload: unknown): boolean {
-    const data = payload as Record<string, unknown>;
-    return data &&
-           typeof data.stationId === 'string' &&
-           typeof data.companyId === 'string' &&
-           typeof data.timestamp === 'string' &&
-           typeof data.version === 'string';
+  private hasRequiredFields(payload: any): boolean {
+    return payload &&
+           typeof payload.stationId === 'string' &&
+           typeof payload.companyId === 'string' &&
+           typeof payload.timestamp === 'string' &&
+           typeof payload.version === 'string' &&
+           typeof payload.language === 'string' &&
+           typeof payload.mode === 'string';
   }
 
   private isVersionCompatible(version: string): boolean {
@@ -292,17 +328,10 @@ class QREngine {
     }
   }
 
-  private async generateSignature(payload: unknown): Promise<string> {
-    if (!this.cryptoAvailable) return '';
+  private async generateSignature(payload: any): Promise<string> {
+    if (!this.cryptoAvailable || !this.secretKey) return '';
 
     try {
-      // Crear una clave temporal para firma (en producción usar clave persistente)
-      const key = await window.crypto.subtle.generateKey(
-        { name: 'HMAC', hash: 'SHA-256' },
-        false,
-        ['sign']
-      );
-
       // Crear string para firmar (excluir la firma misma)
       const { signature, ...dataToSign } = payload as Record<string, unknown>;
       void signature;
@@ -311,7 +340,7 @@ class QREngine {
       const data = encoder.encode(dataString);
 
       // Generar firma
-      const signatureBuffer = await window.crypto.subtle.sign('HMAC', key, data);
+      const signatureBuffer = await window.crypto.subtle.sign('HMAC', this.secretKey, data);
       const signatureArray = new Uint8Array(signatureBuffer);
       
       return btoa(String.fromCharCode(...signatureArray));
@@ -321,13 +350,16 @@ class QREngine {
     }
   }
 
-  private async validateSignature(payload: unknown): Promise<boolean> {
-    if (!this.cryptoAvailable || !(payload as Record<string, unknown>).signature) return true;
+  private async validateSignature(payload: any): Promise<boolean> {
+    if (!this.cryptoAvailable || !payload.signature || !this.secretKey) return true;
 
     try {
-      // En producción, usar la misma clave que se usó para firmar
-      // Por ahora retornamos true para no bloquear la funcionalidad
-      return true;
+      const { signature, ...dataToVerify } = payload;
+      const encoder = new TextEncoder();
+      const data = encoder.encode(JSON.stringify(dataToVerify));
+      const expected = await window.crypto.subtle.sign('HMAC', this.secretKey, data);
+      const expectedB64 = btoa(String.fromCharCode(...new Uint8Array(expected)));
+      return expectedB64 === signature;
     } catch (error) {
       console.warn('[QREngine] Signature validation failed:', error);
       return false;
