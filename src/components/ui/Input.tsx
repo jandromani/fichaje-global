@@ -24,12 +24,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
 
   const inputClasses = [
-    'block px-3 py-2 border rounded-lg text-sm transition-colors duration-200',
+    'block px-3 py-2 border rounded-lg text-sm transition-colors duration-200 bg-white dark:bg-gray-700',
     'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
     'disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed',
     error 
-      ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500' 
-      : 'border-gray-300 text-gray-900 placeholder-gray-400',
+      ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 dark:border-red-600'
+      : 'border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400',
     Icon && iconPosition === 'left' ? 'pl-10' : '',
     Icon && iconPosition === 'right' ? 'pr-10' : '',
     fullWidth ? 'w-full' : '',
@@ -39,7 +39,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   return (
     <div className={fullWidth ? 'w-full' : ''}>
       {label && (
-        <label htmlFor={inputId} className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor={inputId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           {label}
         </label>
       )}
@@ -66,7 +66,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
       </div>
       
       {hint && !error && (
-        <p className="mt-1 text-xs text-gray-500">{hint}</p>
+        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{hint}</p>
       )}
       
       {error && (

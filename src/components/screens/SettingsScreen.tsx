@@ -24,6 +24,7 @@ import { Modal } from '../ui/Modal';
 import { useApp } from '../../contexts/AppContext';
 import { storageManager } from '../../services/storageManager';
 import { environmentInitializer } from '../../services/initializeDefaultEnvironment';
+import { legalService } from '../../services/legalService';
 
 export function SettingsScreen() {
   const { state, showNotification, switchAppMode, setTheme } = useApp();
@@ -31,6 +32,7 @@ export function SettingsScreen() {
   const [showResetModal, setShowResetModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   
   const [profileData, setProfileData] = useState({
     firstName: state.session?.user.firstName || '',
@@ -109,7 +111,7 @@ export function SettingsScreen() {
       return;
     }
     try {
-      const data = storageManager.exportData();
+      const data = legalService.downloadUserData(state.session!.user.id);
       
       const blob = new Blob([data], { 
         type: format === 'json' ? 'application/json' : 'text/csv' 
@@ -209,6 +211,20 @@ export function SettingsScreen() {
       autoClose: true
     });
     setShowPasswordModal(false);
+  };
+
+  const handleDeleteAccount = () => {
+    if (state.session) {
+      legalService.deleteAccount(state.session.user.id);
+    }
+    showNotification({
+      type: 'success',
+      title: 'Cuenta eliminada',
+      message: 'Tus datos locales se han borrado',
+      autoClose: true
+    });
+    setShowDeleteModal(false);
+    setTimeout(() => window.location.reload(), 1000);
   };
 
   // ==========================================
@@ -537,6 +553,29 @@ export function SettingsScreen() {
               </Button>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Trash2 className="w-5 h-5" />
+                <span>Borrar Cuenta</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-gray-600">
+                Elimina tu cuenta y borra todos los datos locales asociados.
+              </p>
+
+              <Button
+                onClick={() => setShowDeleteModal(true)}
+                variant="danger"
+                icon={Trash2}
+                fullWidth
+              >
+                Borrar Mi Cuenta
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
       
@@ -760,6 +799,27 @@ export function SettingsScreen() {
               icon={Shield}
             >
               Entendido
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Eliminar Cuenta"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            ¿Seguro que deseas eliminar tu cuenta y todos los datos locales?
+          </p>
+          <div className="flex justify-end space-x-3">
+            <Button onClick={() => setShowDeleteModal(false)} variant="secondary">
+              Cancelar
+            </Button>
+            <Button onClick={handleDeleteAccount} variant="danger" icon={Trash2}>
+              Borrar
             </Button>
           </div>
         </div>
