@@ -298,3 +298,29 @@ export const DEFAULT_PERMISSIONS: Record<User['role'], Permission[]> = {
     { resource: 'profile', actions: ['read', 'update'] }
   ]
 };
+// ==========================================
+// LEGAL TYPES
+// ==========================================
+
+export interface LegalConsent {
+  workerId: string;
+  acceptedAt: string; // ISO 8601
+  language: string;
+  consentText: string;
+}
+
+export interface LegalReportEntry {
+  date: string;
+  type: string;
+  stationId: string;
+  stationLocation?: string;
+}
+
+export interface LegalReport {
+  employeeName: string;
+  entries: LegalReportEntry[];
+  qrStationIds: string[];
+  signature?: string;
+  deviceHash: string;
+  appVersion: string;
+}

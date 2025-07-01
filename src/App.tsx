@@ -10,6 +10,9 @@ import { LeavesScreen } from './components/screens/LeavesScreen';
 import { ReportsScreen } from './components/screens/ReportsScreen';
 import { NotificationsScreen } from './components/screens/NotificationsScreen';
 import { SettingsScreen } from './components/screens/SettingsScreen';
+import { LegalInfoScreen } from './components/screens/LegalInfoScreen';
+import { LegalConsentModal } from './components/ui/LegalConsentModal';
+import { getConsent, isConsentExpired } from './services/legalEngine';
 
 // ==========================================
 // COMPONENTE PRINCIPAL DE LA APLICACIÓN
@@ -17,6 +20,16 @@ import { SettingsScreen } from './components/screens/SettingsScreen';
 
 function AppContent() {
   const { state } = useApp();
+  const [showConsent, setShowConsent] = React.useState(false);
+
+  React.useEffect(() => {
+    if (state.isAuthenticated) {
+      const consent = getConsent(state.session!.user.id);
+      if (!consent || isConsentExpired(consent)) {
+        setShowConsent(true);
+      }
+    }
+  }, [state.isAuthenticated, state.session]);
 
   // Mostrar loading durante inicialización
   if (state.loading && !state.isAuthenticated) {
@@ -53,6 +66,8 @@ function AppContent() {
         return <ReportsScreen />;
       case 'settings':
         return <SettingsScreen />;
+      case 'legal':
+        return <LegalInfoScreen />;
       case 'notifications':
         return <NotificationsScreen />;
       default:
@@ -62,6 +77,9 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {showConsent && state.session && (
+        <LegalConsentModal workerId={state.session.user.id} onAccepted={() => setShowConsent(false)} />
+      )}
       {/* Banner de modo de aplicación */}
       {state.appMode.ui.showModeBanner && (
         <div className={`w-full py-2 px-4 text-center text-sm font-medium ${getModeColors(state.appMode.mode)}`}>
