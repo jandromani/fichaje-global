@@ -1,0 +1,12 @@
+{
+  "dashboard": {
+    "title": "Painel",
+    "welcome": "Bem-vindo, {{firstName}} {{lastName}}",
+    "todayClockIns": {
+      "user": "Meus registros de hoje",
+      "all": "Registros de hoje"
+    },
+    "activeEmployees": "Funcionários ativos",
+    "pendingLeaves": "Férias pendentes"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "welcome": "مرحباً، {{firstName}} {{lastName}}",
+    "todayClockIns": {
+      "user": "سجلاتي اليوم",
+      "all": "سجلات اليوم"
+    },
+    "activeEmployees": "الموظفون النشطون",
+    "pendingLeaves": "إجازات معلقة"
+  }
+}

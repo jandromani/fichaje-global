@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   Clock, 
   Users, 
@@ -17,6 +18,7 @@ import { useClockIns, useUsers, useLeaveRequests, useStations } from '../../hook
 
 export function DashboardScreen() {
   const { state, navigateTo } = useApp();
+  const { t } = useTranslation();
   const { data: clockIns, loading: clockInsLoading } = useClockIns();
   const { data: users, loading: usersLoading } = useUsers();
   const { data: leaveRequests, loading: leavesLoading } = useLeaveRequests();
@@ -63,9 +65,9 @@ export function DashboardScreen() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('dashboard.title')}</h1>
           <p className="text-gray-600">
-            Bienvenido, {state.session?.user.firstName} {state.session?.user.lastName}
+            {t('dashboard.welcome', { firstName: state.session?.user.firstName, lastName: state.session?.user.lastName })}
           </p>
         </div>
         <div className="text-right">
@@ -90,7 +92,7 @@ export function DashboardScreen() {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {userRole === 'employee' ? 'Mis Fichajes Hoy' : 'Fichajes Hoy'}
+                {userRole === 'employee' ? t('dashboard.todayClockIns.user') : t('dashboard.todayClockIns.all')}
               </p>
               <p className="text-2xl font-bold text-gray-900">
                 {userRole === 'employee' 
@@ -110,7 +112,7 @@ export function DashboardScreen() {
                 <Users className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600">Empleados Activos</p>
+                <p className="text-sm font-medium text-gray-600">{t('dashboard.activeEmployees')}</p>
                 <p className="text-2xl font-bold text-gray-900">{activeUsers.length}</p>
               </div>
             </CardContent>
@@ -125,7 +127,7 @@ export function DashboardScreen() {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">
-                {userRole === 'employee' ? 'Mis Solicitudes' : 'Solicitudes Pendientes'}
+                {userRole === 'employee' ? t('dashboard.pendingLeaves') : t('dashboard.pendingLeaves')}
               </p>
               <p className="text-2xl font-bold text-gray-900">
                 {userRole === 'employee' 

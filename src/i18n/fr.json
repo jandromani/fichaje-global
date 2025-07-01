@@ -1,0 +1,12 @@
+{
+  "dashboard": {
+    "title": "Tableau de bord",
+    "welcome": "Bienvenue, {{firstName}} {{lastName}}",
+    "todayClockIns": {
+      "user": "Mes pointages aujourd'hui",
+      "all": "Pointages aujourd'hui"
+    },
+    "activeEmployees": "Employés actifs",
+    "pendingLeaves": "Congés en attente"
+  }
+}

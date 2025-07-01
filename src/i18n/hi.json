@@ -1,0 +1,12 @@
+{
+  "dashboard": {
+    "title": "डैशबोर्ड",
+    "welcome": "स्वागत है, {{firstName}} {{lastName}}",
+    "todayClockIns": {
+      "user": "आज की मेरी उपस्थिति",
+      "all": "आज की उपस्थिति"
+    },
+    "activeEmployees": "सक्रिय कर्मचारी",
+    "pendingLeaves": "लंबित अवकाश"
+  }
+}

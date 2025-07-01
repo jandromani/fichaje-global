@@ -1,0 +1,12 @@
+{
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome, {{firstName}} {{lastName}}",
+    "todayClockIns": {
+      "user": "My Clock-ins Today",
+      "all": "Clock-ins Today"
+    },
+    "activeEmployees": "Active Employees",
+    "pendingLeaves": "Pending Leaves"
+  }
+}

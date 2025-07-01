@@ -1,0 +1,12 @@
+{
+  "dashboard": {
+    "title": "ড্যাশবোর্ড",
+    "welcome": "স্বাগতম, {{firstName}} {{lastName}}",
+    "todayClockIns": {
+      "user": "আজকের আমার চেক-ইন",
+      "all": "আজকের চেক-ইন"
+    },
+    "activeEmployees": "সক্রিয় কর্মচারী",
+    "pendingLeaves": "মুলতুবি ছুটি"
+  }
+}

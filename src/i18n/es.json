@@ -1,0 +1,12 @@
+{
+  "dashboard": {
+    "title": "Tablero",
+    "welcome": "Bienvenido, {{firstName}} {{lastName}}",
+    "todayClockIns": {
+      "user": "Mis Fichajes Hoy",
+      "all": "Fichajes Hoy"
+    },
+    "activeEmployees": "Empleados Activos",
+    "pendingLeaves": "Solicitudes Pendientes"
+  }
+}

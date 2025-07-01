@@ -1,0 +1,12 @@
+{
+  "dashboard": {
+    "title": "儀表板",
+    "welcome": "歡迎，{{firstName}} {{lastName}}",
+    "todayClockIns": {
+      "user": "我的今日打卡",
+      "all": "今日打卡"
+    },
+    "activeEmployees": "活躍員工",
+    "pendingLeaves": "待批假期"
+  }
+}
