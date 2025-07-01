@@ -10,6 +10,7 @@ import { LeavesScreen } from './components/screens/LeavesScreen';
 import { ReportsScreen } from './components/screens/ReportsScreen';
 import { NotificationsScreen } from './components/screens/NotificationsScreen';
 import { SettingsScreen } from './components/screens/SettingsScreen';
+import { QRDesignerScreen } from './components/screens/QRDesignerScreen';
 
 // ==========================================
 // COMPONENTE PRINCIPAL DE LA APLICACIÓN
@@ -51,6 +52,8 @@ function AppContent() {
         return <LeavesScreen />;
       case 'reports':
         return <ReportsScreen />;
+      case 'qrdesigner':
+        return <QRDesignerScreen />;
       case 'settings':
         return <SettingsScreen />;
       case 'notifications':

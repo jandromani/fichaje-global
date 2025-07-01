@@ -4,9 +4,10 @@ import {
   Clock, 
   Users, 
   MapPin, 
-  Calendar, 
-  BarChart3, 
-  Settings, 
+  Calendar,
+  BarChart3,
+  QrCode,
+  Settings,
   LogOut,
   Bell,
   Menu,
@@ -31,6 +32,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     { name: 'Estaciones', icon: MapPin, screen: 'stations', roles: ['admin', 'manager'] },
     { name: 'Ausencias', icon: Calendar, screen: 'leaves', roles: ['admin', 'manager', 'employee'] },
     { name: 'Reportes', icon: BarChart3, screen: 'reports', roles: ['admin', 'manager'] },
+    { name: 'QR Designer', icon: QrCode, screen: 'qrdesigner', roles: ['admin', 'manager'] },
     { name: 'Configuración', icon: Settings, screen: 'settings', roles: ['admin', 'manager', 'employee'] },
   ];
 
