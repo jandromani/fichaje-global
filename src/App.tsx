@@ -10,6 +10,8 @@ import { LeavesScreen } from './components/screens/LeavesScreen';
 import { ReportsScreen } from './components/screens/ReportsScreen';
 import { NotificationsScreen } from './components/screens/NotificationsScreen';
 import { SettingsScreen } from './components/screens/SettingsScreen';
+import { PrivacyDialog } from './components/ui/PrivacyDialog';
+import { legalService } from './services/legalService';
 
 // ==========================================
 // COMPONENTE PRINCIPAL DE LA APLICACIÓN
@@ -17,6 +19,16 @@ import { SettingsScreen } from './components/screens/SettingsScreen';
 
 function AppContent() {
   const { state } = useApp();
+  const [showConsent, setShowConsent] = React.useState(false);
+
+  React.useEffect(() => {
+    if (state.isAuthenticated && state.session) {
+      const consent = legalService.getConsent(state.session.user.id);
+      if (!consent) {
+        setShowConsent(true);
+      }
+    }
+  }, [state.isAuthenticated, state.session]);
 
   // Mostrar loading durante inicialización
   if (state.loading && !state.isAuthenticated) {
@@ -60,8 +72,15 @@ function AppContent() {
     }
   };
 
+  const handleAcceptConsent = () => {
+    if (state.session) {
+      legalService.saveConsent(state.session.user.id, navigator.language);
+    }
+    setShowConsent(false);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       {/* Banner de modo de aplicación */}
       {state.appMode.ui.showModeBanner && (
         <div className={`w-full py-2 px-4 text-center text-sm font-medium ${getModeColors(state.appMode.mode)}`}>
@@ -73,18 +92,20 @@ function AppContent() {
         {renderCurrentScreen()}
       </MainLayout>
 
+      <PrivacyDialog isOpen={showConsent} onAccept={handleAcceptConsent} />
+
       {/* Notificaciones Toast */}
       {state.notifications.length > 0 && (
         <div className="fixed top-4 right-4 z-50 space-y-2">
           {state.notifications.slice(0, 3).map((notification) => (
             <div
               key={notification.id}
-              className={`max-w-sm bg-white rounded-lg shadow-lg p-4 border-l-4 ${getNotificationColors(notification.type)}`}
+              className={`max-w-sm bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 border-l-4 ${getNotificationColors(notification.type)}`}
             >
               <div className="flex items-start">
                 <div className="flex-1">
-                  <h4 className="text-sm font-semibold text-gray-900">{notification.title}</h4>
-                  <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{notification.title}</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>
                 </div>
                 <button
                   onClick={() => {/* clearNotification(notification.id) */}}
