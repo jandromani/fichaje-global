@@ -493,6 +493,12 @@ export function ClockInScreen() {
                       {clockIn.syncStatus === 'pending' && (
                         <Badge variant="warning" size="sm">Pendiente</Badge>
                       )}
+                      {clockIn.syncStatus === 'error' && (
+                        <Badge variant="danger" size="sm">Error</Badge>
+                      )}
+                      {clockIn.syncStatus === 'conflicted' && (
+                        <Badge variant="info" size="sm">Conflicto</Badge>
+                      )}
                     </div>
                   </div>
                 );

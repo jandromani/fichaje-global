@@ -45,6 +45,13 @@ class SyncEngine {
     }
   };
 
+  private typeToStorageKey: Record<SyncQueueItem['type'], string> = {
+    clockin: 'wmapp_clockins',
+    leave: 'wmapp_leave_requests',
+    user: 'wmapp_users',
+    notification: 'wmapp_notifications'
+  };
+
   private isProcessing = false;
   private intervalId: NodeJS.Timeout | null = null;
   private listeners: Array<(status: SyncStatus) => void> = [];
@@ -272,6 +279,9 @@ class SyncEngine {
 
       if (success) {
         this.removeFromQueue(item.id);
+        if (item.action !== 'delete') {
+          this.updateEntityStatus(item.type, item.data.id, 'synced');
+        }
         this.log(`Sync successful: ${item.type}/${item.action}`, 'success');
       } else {
         throw new Error('Sync failed');
@@ -293,6 +303,11 @@ class SyncEngine {
     updatedItem.error = error.message || 'Unknown error';
 
     // Calculate next retry time with exponential backoff + jitter
+    const isConflict = error.message?.toLowerCase().includes('conflict');
+    if (isConflict && item.action !== 'delete') {
+      this.updateEntityStatus(item.type, item.data.id, 'conflicted');
+    }
+
     if (updatedItem.attempts < updatedItem.maxAttempts) {
       const delay = Math.min(
         this.config.retryDelayBase * Math.pow(2, updatedItem.attempts - 1),
@@ -308,6 +323,10 @@ class SyncEngine {
       this.log(`Sync failed, retry in ${Math.round(finalDelay / 1000)}s: ${item.type}/${item.action}`, 'warning', error);
     } else {
       this.log(`Sync failed permanently: ${item.type}/${item.action}`, 'error', error);
+      if (item.action !== 'delete') {
+        const status = error.message?.toLowerCase().includes('conflict') ? 'conflicted' : 'error';
+        this.updateEntityStatus(item.type, item.data.id, status as any);
+      }
     }
 
     queue[queueIndex] = updatedItem;
@@ -321,10 +340,15 @@ class SyncEngine {
   private async simulateSync(item: SyncQueueItem): Promise<boolean> {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500));
-    
+
     // Simulate occasional failures for testing
     const failureRate = 0.1; // 10% failure rate
-    if (Math.random() < failureRate) {
+    const conflictRate = 0.05; // 5% conflict rate
+    const r = Math.random();
+    if (r < conflictRate) {
+      throw new Error('Conflict');
+    }
+    if (r < conflictRate + failureRate) {
       throw new Error('Simulated network error');
     }
 
@@ -342,6 +366,35 @@ class SyncEngine {
 
   private saveQueue(queue: SyncQueueItem[]): void {
     storageManager.set('sync_queue', queue);
+  }
+
+  private updateEntityStatus(type: SyncQueueItem['type'], id: string, status: 'synced' | 'error' | 'conflicted'): void {
+    const key = this.typeToStorageKey[type];
+    if (!key) return;
+    const items = storageManager.get<any[]>(key, []);
+    const index = items.findIndex(i => i.id === id);
+    if (index === -1) return;
+    items[index].syncStatus = status;
+    storageManager.set(key, items);
+  }
+
+  exportPendingQueue(): string {
+    const queue = this.getQueue();
+    return JSON.stringify({ exportedAt: new Date().toISOString(), pending: queue }, null, 2);
+  }
+
+  downloadPendingSync(): void {
+    if (typeof window === 'undefined') return;
+    const data = this.exportPendingQueue();
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pending-sync-${new Date().toISOString()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   private generateId(): string {
