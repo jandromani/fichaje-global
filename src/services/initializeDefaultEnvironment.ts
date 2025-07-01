@@ -145,7 +145,8 @@ class EnvironmentInitializer {
       isDemo: true,
       isActive: true,
       currency: 'EUR',
-      startDate: '2024-01-01'
+      startDate: '2024-01-01',
+      nationalId: '00000000A'
     };
 
     const users: User[] = [
@@ -156,37 +157,16 @@ class EnvironmentInitializer {
         firstName: 'Ana',
         lastName: 'García',
         role: 'admin',
-        stationIds: ['demo_station_001', 'demo_station_002'],
+        stationIds: ['demo_station_001'],
         avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=200',
         phoneNumber: '+34 600 123 456',
+        nationalId: '00000001A',
         department: 'Administración',
         position: 'Directora General',
         salary: 45000,
         passwordHash: '5d41402abc4b2a76b9719d911017c592', // Hash fijo para 'hello'
         permissions: [
           { resource: '*', actions: ['create', 'read', 'update', 'delete', 'approve'] }
-        ]
-      },
-      {
-        ...baseUser,
-        id: 'demo_manager_001',
-        email: 'manager@demo.com',
-        firstName: 'Carlos',
-        lastName: 'Rodríguez',
-        role: 'manager',
-        stationIds: ['demo_station_001'],
-        avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200',
-        phoneNumber: '+34 600 234 567',
-        department: 'Operaciones',
-        position: 'Jefe de Operaciones',
-        salary: 35000,
-        passwordHash: '5d41402abc4b2a76b9719d911017c592',
-        permissions: [
-          { resource: 'users', actions: ['read', 'update'] },
-          { resource: 'clockins', actions: ['read', 'update', 'approve'] },
-          { resource: 'leaves', actions: ['read', 'approve'] },
-          { resource: 'stations', actions: ['read'] },
-          { resource: 'reports', actions: ['read'] }
         ]
       },
       {
@@ -199,6 +179,7 @@ class EnvironmentInitializer {
         stationIds: ['demo_station_001'],
         avatar: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=200',
         phoneNumber: '+34 600 345 678',
+        nationalId: '00000002B',
         department: 'Ventas',
         position: 'Comercial',
         salary: 28000,
@@ -216,9 +197,10 @@ class EnvironmentInitializer {
         firstName: 'David',
         lastName: 'Martín',
         role: 'employee',
-        stationIds: ['demo_station_002'],
+        stationIds: ['demo_station_001'],
         avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=200',
         phoneNumber: '+34 600 456 789',
+        nationalId: '00000003C',
         department: 'Almacén',
         position: 'Operario',
         salary: 24000,
@@ -255,44 +237,12 @@ class EnvironmentInitializer {
           isTemporary: false
         },
         isActive: true,
-        allowedUserIds: ['demo_admin_001', 'demo_manager_001', 'demo_employee_001'],
+        allowedUserIds: ['demo_admin_001', 'demo_employee_001', 'demo_employee_002'],
         description: 'Punto de fichaje principal del edificio',
         stationType: 'entrance',
         restrictions: {
           timeWindows: [
             { start: '07:00', end: '20:00', days: [1, 2, 3, 4, 5] }
-          ]
-        },
-        createdAt: now,
-        updatedAt: now,
-        version: 1,
-        syncStatus: 'synced',
-        isDemo: true,
-        companyId
-      },
-      {
-        id: 'demo_station_002',
-        name: 'Almacén',
-        location: {
-          lat: 40.4170,
-          lng: -3.7040,
-          address: 'Almacén - Planta Baja'
-        },
-        qrCode: await qrEngine.generateStationQR('demo_station_002', companyId),
-        qrMetadata: {
-          stationId: 'demo_station_002',
-          companyId,
-          timestamp: now,
-          version: '1.0',
-          isTemporary: false
-        },
-        isActive: true,
-        allowedUserIds: ['demo_admin_001', 'demo_employee_002'],
-        description: 'Punto de fichaje del almacén',
-        stationType: 'warehouse',
-        restrictions: {
-          timeWindows: [
-            { start: '08:00', end: '17:00', days: [1, 2, 3, 4, 5] }
           ]
         },
         createdAt: now,
@@ -544,3 +494,7 @@ class EnvironmentInitializer {
 
 // Singleton instance
 export const environmentInitializer = new EnvironmentInitializer();
+
+export async function initializeDefaultEnvironment() {
+  return environmentInitializer.initializeEnvironment();
+}

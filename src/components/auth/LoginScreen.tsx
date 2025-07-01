@@ -3,7 +3,7 @@ import { LogIn, Building2, Users, Shield, Zap } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Card, CardContent } from '../ui/Card';
 import { useApp } from '../../contexts/AppContext';
-import { environmentInitializer } from '../../services/initializeDefaultEnvironment';
+import { initializeDefaultEnvironment } from '../../services/initializeDefaultEnvironment';
 
 export function LoginScreen() {
   const { login, state, showNotification } = useApp();
@@ -16,7 +16,7 @@ export function LoginScreen() {
       console.log('[LoginScreen] Starting demo login...');
       
       // Inicializar entorno demo si es necesario
-      const initResult = await environmentInitializer.initializeEnvironment();
+      const initResult = await initializeDefaultEnvironment();
       
       console.log('[LoginScreen] Init result:', initResult);
       

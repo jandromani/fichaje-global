@@ -21,6 +21,7 @@ export interface User extends BaseEntity {
   isActive: boolean;
   avatar?: string;
   phoneNumber?: string;
+  nationalId?: string;
   department?: string;
   position?: string;
   startDate: string;
@@ -37,6 +38,7 @@ export interface Company extends BaseEntity {
   name: string;
   logo?: string;
   address: string;
+  taxId?: string;
   timezone: string;
   locale: string;
   currency: string;
@@ -172,6 +174,27 @@ export interface LocalClockIn extends ClockIn {
   syncError?: string;
 }
 
+export interface ConsentRecord extends BaseEntity {
+  userId: string;
+  consentGivenAt: string;
+}
+
+export interface LegalReport extends BaseEntity {
+  companyId: string;
+  weekStart: string;
+  weekEnd: string;
+  companyName: string;
+  companyTaxId?: string;
+  entries: Array<{
+    userId: string;
+    userName: string;
+    nationalId?: string;
+    records: Array<{ type: 'in' | 'out'; timestamp: string; }>;
+  }>;
+  generatedAt: string;
+  digitalSignature: string;
+}
+
 export interface AppMode {
   mode: 'demo' | 'production' | 'debug';
   features: {
@@ -279,6 +302,8 @@ export const STORAGE_KEYS = {
   APP_MODE: 'wmapp_mode',
   SYNC_QUEUE: 'wmapp_sync_queue',
   SETTINGS: 'wmapp_settings',
+  CONSENTS: 'wmapp_consents',
+  LEGAL_REPORTS: 'wmapp_legal_reports',
 } as const;
 
 export const DEFAULT_PERMISSIONS: Record<User['role'], Permission[]> = {

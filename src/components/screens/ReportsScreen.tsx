@@ -20,6 +20,7 @@ import { Badge } from '../ui/Badge';
 import { Modal } from '../ui/Modal';
 import { useApp } from '../../contexts/AppContext';
 import { useClockIns, useUsers, useStations, useLeaveRequests } from '../../hooks/useData';
+import { legalFramework } from '../../services/legalFramework';
 
 interface ReportFilters {
   startDate: string;
@@ -213,6 +214,14 @@ export function ReportsScreen() {
   // ==========================================
 
   const handleExport = (format: 'pdf' | 'excel' | 'csv') => {
+    if (state.appMode.mode === 'demo') {
+      showNotification({
+        type: 'warning',
+        title: 'Función deshabilitada',
+        message: 'La exportación está deshabilitada en modo demo'
+      });
+      return;
+    }
     if (!reportData) return;
 
     // Simular exportación
@@ -241,6 +250,33 @@ export function ReportsScreen() {
     });
 
     setShowExportModal(false);
+  };
+
+  const handleGenerateLegalReport = () => {
+    if (state.appMode.mode === 'demo') {
+      showNotification({
+        type: 'warning',
+        title: 'Función deshabilitada',
+        message: 'No disponible en modo demo'
+      });
+      return;
+    }
+    const weekStart = filters.startDate;
+    const report = legalFramework.generateLegalReport(state.session!.company.id, weekStart);
+    if (report) {
+      showNotification({
+        type: 'success',
+        title: 'Informe legal generado',
+        message: `Semana ${report.weekStart} - ${report.weekEnd}`,
+        autoClose: true
+      });
+    } else {
+      showNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'No se pudo generar el informe'
+      });
+    }
   };
 
   const resetFilters = () => {
@@ -279,13 +315,22 @@ export function ReportsScreen() {
           </p>
         </div>
         
-        <Button
-          onClick={() => setShowExportModal(true)}
-          icon={Download}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          Exportar Reporte
-        </Button>
+        <div className="flex space-x-2">
+          <Button
+            onClick={() => setShowExportModal(true)}
+            icon={Download}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            Exportar Reporte
+          </Button>
+          <Button
+            onClick={handleGenerateLegalReport}
+            icon={FileText}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            Informe Legal
+          </Button>
+        </div>
       </div>
 
       {/* Filtros */}

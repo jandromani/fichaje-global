@@ -148,8 +148,13 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <h1 className="text-xl font-semibold text-gray-900">
                   {state.currentCompany?.name || 'Workforce Management'}
                 </h1>
-                {state.appMode.mode === 'demo' && (
-                  <Badge variant="info" size="sm">DEMO</Badge>
+                {state.appMode.mode !== 'production' && (
+                  <Badge
+                    variant={state.appMode.mode === 'debug' ? 'danger' : 'info'}
+                    size="sm"
+                  >
+                    {state.appMode.mode.toUpperCase()}
+                  </Badge>
                 )}
               </div>
             </div>
